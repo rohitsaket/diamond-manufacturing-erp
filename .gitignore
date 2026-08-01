@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.env
+*.local
+
+# Storage
+storage/exports/*
+storage/logs/*
+storage/uploads/*
+!storage/exports/.gitkeep
+!storage/logs/.gitkeep
+!storage/uploads/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db

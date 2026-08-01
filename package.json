@@ -1,0 +1,17 @@
+{
+  "name": "diamond-manufacturing-erp",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "dev:client": "cd frontend && npm run dev",
+    "dev:server": "cd backend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "preview": "cd frontend && npm run preview",
+    "db:migrate": "cd backend && npm run migrate",
+    "db:seed": "cd backend && npm run seed",
+    "db:setup": "cd backend && npm run db:setup"
+  }
+}
