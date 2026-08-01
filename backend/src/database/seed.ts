@@ -45,10 +45,24 @@ async function run(): Promise<void> {
     console.log('\n  Clearing existing seeded data (if tables exist):');
     await conn.query('SET FOREIGN_KEY_CHECKS = 0');
     
-    // List of tables to clear (only if they exist)
+    // List of tables to clear (only if they exist).
+    // Foreign key checks are disabled around this loop, so ordering does not matter.
     const tablesToClear = [
-      'lots', 'salary_lines', 'salary_periods', 'rate_card_audit_logs', 
-      'rate_card', 'employees', 'shapes', 'labour_heads', 'users', '_seeds'
+      // Core manufacturing + payroll
+      'lots', 'salary_lines', 'salary_periods', 'rate_card_audit_logs',
+      'rate_card', 'employees', 'shapes', 'labour_heads', 'users',
+      // HRMS
+      'advance_recoveries', 'advances',
+      'leave_requests', 'leave_balances', 'leave_types',
+      'attendance_records', 'holidays', 'shifts',
+      'employee_documents', 'candidates', 'job_openings',
+      // Engagement + dashboard
+      'training_enrollments', 'trainings',
+      'asset_assignments', 'assets',
+      'expense_claims', 'tickets', 'tasks',
+      'company_events', 'announcements',
+      'activity_logs', 'notifications', 'dashboard_layouts',
+      '_seeds',
     ];
 
     for (const table of tablesToClear) {

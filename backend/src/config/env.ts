@@ -18,4 +18,23 @@ export const env = {
     expiresIn: process.env.JWT_EXPIRES_IN || '24h',
   },
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  uploadDir: process.env.UPLOAD_DIR || path.resolve(__dirname, '../../../storage/uploads'),
+  maxUploadMb: parseInt(process.env.MAX_UPLOAD_MB || '5', 10),
+  /**
+   * SMTP is optional. With no host configured, email notifications are recorded
+   * as skipped and the in-app notification is still delivered.
+   */
+  smtp: {
+    enabled: !!process.env.SMTP_HOST,
+    host: process.env.SMTP_HOST || '',
+    port: parseInt(process.env.SMTP_PORT || '587', 10),
+    secure: process.env.SMTP_SECURE === 'true',
+    user: process.env.SMTP_USER || '',
+    password: process.env.SMTP_PASSWORD || '',
+    from: process.env.SMTP_FROM || 'Harene Diamond ERP <no-reply@harene.local>',
+  },
+  company: {
+    name: process.env.COMPANY_NAME || 'Harene Diamond',
+    appUrl: process.env.APP_URL || 'http://localhost:5173',
+  },
 };

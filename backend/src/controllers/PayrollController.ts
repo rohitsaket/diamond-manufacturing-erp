@@ -89,6 +89,72 @@ export class PayrollController {
     }
   };
 
+  recalculatePeriod = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const periodId = parseInt(req.params.id as string);
+      const result = await this.service.recalculatePeriod(
+        periodId,
+        req.user!.userId,
+        req.user!.name,
+      );
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  };
+
+  getCompliance = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const periodId = parseInt(req.params.id as string);
+      const summary = await this.service.getComplianceSummary(periodId);
+      res.json(summary);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  };
+
+  getPayslip = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const lineId = parseInt(req.params.id as string);
+      const payslip = await this.service.getPayslip(lineId);
+      res.json(payslip);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  };
+
+  getMyPayslips = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const employeeId = req.user!.employeeId;
+      if (!employeeId) {
+        res.status(403).json({ error: 'This account is not linked to an employee record' });
+        return;
+      }
+      const limit = req.query.limit ? parseInt(String(req.query.limit)) : undefined;
+      const payslips = await this.service.getMyPayslips(employeeId, limit);
+      res.json(payslips);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  };
+
+  getMyPayslip = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const employeeId = req.user!.employeeId;
+      if (!employeeId) {
+        res.status(403).json({ error: 'This account is not linked to an employee record' });
+        return;
+      }
+      const lineId = parseInt(req.params.lineId as string);
+      const payslip = await this.service.getMyPayslip(employeeId, lineId);
+      res.json(payslip);
+    } catch (err: any) {
+      // Ownership failure is a permission problem, not a server fault.
+      const status = err.message === 'You can only view your own payslips' ? 403 : 500;
+      res.status(status).json({ error: err.message });
+    }
+  };
+
   exportCsv = async (req: Request, res: Response): Promise<void> => {
     try {
       const periodId = parseInt(req.params.id as string);

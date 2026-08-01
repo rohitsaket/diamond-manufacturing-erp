@@ -1,0 +1,25 @@
+-- Extend employees with HR profile, KYC, bank and statutory fields
+ALTER TABLE employees ADD COLUMN address TEXT NULL;
+ALTER TABLE employees ADD COLUMN city VARCHAR(100) NULL;
+ALTER TABLE employees ADD COLUMN dob DATE NULL;
+ALTER TABLE employees ADD COLUMN gender ENUM('MALE', 'FEMALE', 'OTHER') NULL;
+ALTER TABLE employees ADD COLUMN blood_group VARCHAR(5) NULL;
+ALTER TABLE employees ADD COLUMN aadhaar_number VARCHAR(12) NULL;
+ALTER TABLE employees ADD COLUMN pan VARCHAR(10) NULL;
+ALTER TABLE employees ADD COLUMN bank_name VARCHAR(120) NULL;
+ALTER TABLE employees ADD COLUMN bank_account VARCHAR(30) NULL;
+ALTER TABLE employees ADD COLUMN bank_ifsc VARCHAR(11) NULL;
+ALTER TABLE employees ADD COLUMN emergency_contact_name VARCHAR(100) NULL;
+ALTER TABLE employees ADD COLUMN emergency_contact_phone VARCHAR(20) NULL;
+ALTER TABLE employees ADD COLUMN photo_url VARCHAR(500) NULL;
+ALTER TABLE employees ADD COLUMN department VARCHAR(100) NULL;
+ALTER TABLE employees ADD COLUMN designation VARCHAR(100) NULL;
+ALTER TABLE employees ADD COLUMN reporting_manager_id INT UNSIGNED NULL;
+ALTER TABLE employees ADD COLUMN monthly_salary DECIMAL(12, 2) NULL;
+ALTER TABLE employees ADD COLUMN pf_applicable BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE employees ADD COLUMN esi_applicable BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE employees ADD COLUMN shift_id INT UNSIGNED NULL;
+ALTER TABLE employees ADD CONSTRAINT fk_employees_shift FOREIGN KEY (shift_id) REFERENCES shifts(id) ON DELETE SET NULL;
+ALTER TABLE employees ADD CONSTRAINT fk_employees_manager FOREIGN KEY (reporting_manager_id) REFERENCES employees(id) ON DELETE SET NULL;
+ALTER TABLE employees ADD INDEX idx_employees_department (department);
+ALTER TABLE employees ADD INDEX idx_employees_manager (reporting_manager_id);

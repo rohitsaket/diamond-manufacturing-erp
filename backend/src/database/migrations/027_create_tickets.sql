@@ -1,0 +1,26 @@
+-- Create helpdesk ticket tables
+CREATE TABLE IF NOT EXISTS tickets (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  ticket_no VARCHAR(20) NOT NULL UNIQUE,
+  employee_id INT UNSIGNED NOT NULL,
+  category ENUM('HR', 'PAYROLL', 'IT', 'FACILITY', 'OTHER') NOT NULL DEFAULT 'HR',
+  subject VARCHAR(255) NOT NULL,
+  description TEXT NULL,
+  priority ENUM('LOW', 'MEDIUM', 'HIGH', 'URGENT') NOT NULL DEFAULT 'MEDIUM',
+  status ENUM('OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED') NOT NULL DEFAULT 'OPEN',
+  assigned_to INT UNSIGNED NULL,
+  resolved_at DATETIME NULL,
+  resolution VARCHAR(1000) NULL,
+  created_by INT UNSIGNED NULL,
+  updated_by INT UNSIGNED NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL,
+  FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+  FOREIGN KEY (assigned_to) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_tickets_employee (employee_id, status),
+  INDEX idx_tickets_status (status),
+  INDEX idx_tickets_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -1,0 +1,26 @@
+-- Create expense claim table
+CREATE TABLE IF NOT EXISTS expense_claims (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT UNSIGNED NOT NULL,
+  category ENUM('TRAVEL', 'FOOD', 'TOOLS', 'MEDICAL', 'OTHER') NOT NULL DEFAULT 'OTHER',
+  amount DECIMAL(12, 2) NOT NULL,
+  expense_date DATE NOT NULL,
+  description VARCHAR(500) NULL,
+  receipt_path VARCHAR(500) NULL,
+  status ENUM('PENDING', 'APPROVED', 'REJECTED', 'REIMBURSED') NOT NULL DEFAULT 'PENDING',
+  decided_by INT UNSIGNED NULL,
+  decided_at DATETIME NULL,
+  decision_note VARCHAR(500) NULL,
+  created_by INT UNSIGNED NULL,
+  updated_by INT UNSIGNED NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL,
+  FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+  FOREIGN KEY (decided_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_expenses_employee (employee_id, status),
+  INDEX idx_expenses_status (status),
+  INDEX idx_expenses_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

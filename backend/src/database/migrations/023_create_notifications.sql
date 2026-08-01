@@ -1,0 +1,25 @@
+-- Create notification center tables (in-app delivery with optional email fan-out)
+CREATE TABLE IF NOT EXISTS notifications (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  category ENUM('LEAVE', 'ATTENDANCE', 'PAYROLL', 'TRAINING', 'POLICY', 'SECURITY', 'SYSTEM', 'RECRUITMENT', 'EXPENSE', 'TASK', 'HELPDESK', 'ASSET') NOT NULL DEFAULT 'SYSTEM',
+  priority ENUM('LOW', 'NORMAL', 'HIGH', 'URGENT') NOT NULL DEFAULT 'NORMAL',
+  title VARCHAR(255) NOT NULL,
+  body VARCHAR(1000) NULL,
+  link_page VARCHAR(100) NULL,
+  link_ref_id INT UNSIGNED NULL,
+  is_read BOOLEAN NOT NULL DEFAULT false,
+  read_at DATETIME NULL,
+  is_archived BOOLEAN NOT NULL DEFAULT false,
+  snoozed_until DATETIME NULL,
+  email_status ENUM('NONE', 'PENDING', 'SENT', 'FAILED') NOT NULL DEFAULT 'NONE',
+  email_error VARCHAR(500) NULL,
+  created_by INT UNSIGNED NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_notifications_user_unread (user_id, is_read, is_archived),
+  INDEX idx_notifications_created (created_at),
+  INDEX idx_notifications_category (category)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

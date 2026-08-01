@@ -343,6 +343,71 @@ export class LotRepository extends BaseRepository {
     }));
   }
 
+  /**
+   * Piece-rate earnings per employee for a payroll window.
+   *
+   * A lot contributes to payroll once it has been received (RECEIVED/VERIFIED)
+   * and the received date falls inside the window — that is the date the work
+   * is considered delivered, regardless of when it was issued.
+   */
+  async getLabourByEmployeeForWindow(
+    from: string,
+    to: string,
+    conn?: any,
+  ): Promise<{ employee_id: number; total_amount: number; total_cts: number; lots_count: number }[]> {
+    const sql = `SELECT employee_id,
+                        COALESCE(SUM(labour_amount), 0) AS total_amount,
+                        COALESCE(SUM(issue_weight), 0) AS total_cts,
+                        COUNT(*) AS lots_count
+                 FROM lots
+                 WHERE status IN ('RECEIVED', 'VERIFIED')
+                   AND received_date BETWEEN ? AND ?
+                   AND deleted_at IS NULL
+                 GROUP BY employee_id`;
+    if (conn) {
+      const [rows] = await conn.query(sql, [from, to]);
+      return rows as { employee_id: number; total_amount: number; total_cts: number; lots_count: number }[];
+    }
+    return this.query<{ employee_id: number; total_amount: number; total_cts: number; lots_count: number }[]>(
+      sql,
+      [from, to],
+    );
+  }
+
+  /** Per-employee productivity over a window (lots, carats in/out, labour value). */
+  async getProductivityByMonth(
+    from: string,
+    to: string,
+  ): Promise<
+    {
+      employee_id: number;
+      employee_name: string;
+      emp_code: string;
+      lots_count: number;
+      total_cts: number;
+      total_polished: number;
+      labour_amount: number;
+    }[]
+  > {
+    return this.query<any[]>(
+      `SELECT l.employee_id,
+              e.full_name AS employee_name,
+              e.emp_code,
+              COUNT(*) AS lots_count,
+              COALESCE(SUM(l.issue_weight), 0) AS total_cts,
+              COALESCE(SUM(l.polished_wt), 0) AS total_polished,
+              COALESCE(SUM(l.labour_amount), 0) AS labour_amount
+       FROM lots l
+       JOIN employees e ON l.employee_id = e.id
+       WHERE l.status IN ('RECEIVED', 'VERIFIED')
+         AND l.received_date BETWEEN ? AND ?
+         AND l.deleted_at IS NULL
+       GROUP BY l.employee_id, e.full_name, e.emp_code
+       ORDER BY labour_amount DESC`,
+      [from, to],
+    );
+  }
+
   private async toResponse(row: any): Promise<LotResponse> {
     const fmtDate = (d: any): string => d instanceof Date ? d.toISOString().split('T')[0] : String(d);
     return {

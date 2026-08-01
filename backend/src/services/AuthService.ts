@@ -2,13 +2,20 @@ import bcrypt from 'bcryptjs';
 import { UserRepository } from '../repositories/UserRepository';
 import { generateToken } from '../middleware/auth';
 
+export interface AuthUserResponse {
+  email: string;
+  name: string;
+  role: string;
+  employeeId: number | null;
+  theme: 'light' | 'dark' | 'system';
+  mustChangePassword: boolean;
+  avatarUrl: string | null;
+}
+
 export class AuthService {
   private userRepo = new UserRepository();
 
-  async login(email: string, password: string): Promise<{
-    token: string;
-    user: { email: string; name: string; role: string };
-  }> {
+  async login(email: string, password: string): Promise<{ token: string; user: AuthUserResponse }> {
     const user = await this.userRepo.findByEmail(email);
     if (!user) {
       throw new Error('Invalid email or password');
@@ -30,25 +37,35 @@ export class AuthService {
       email: user.email,
       role: user.role,
       name: user.name,
+      employeeId: user.employee_id ?? null,
     });
 
-    return {
-      token,
-      user: {
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
-    };
+    return { token, user: toAuthUser(user) };
   }
 
-  async getMe(userId: number): Promise<{ email: string; name: string; role: string } | null> {
+  async getMe(userId: number): Promise<AuthUserResponse | null> {
     const user = await this.userRepo.findById(userId);
     if (!user) return null;
-    return {
-      email: user.email,
-      name: user.name,
-      role: user.role,
-    };
+    return toAuthUser(user);
   }
+}
+
+function toAuthUser(user: {
+  email: string;
+  name: string;
+  role: string;
+  employee_id?: number | null;
+  theme?: 'light' | 'dark' | 'system';
+  must_change_password?: boolean;
+  avatar_url?: string | null;
+}): AuthUserResponse {
+  return {
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    employeeId: user.employee_id ?? null,
+    theme: user.theme ?? 'light',
+    mustChangePassword: !!user.must_change_password,
+    avatarUrl: user.avatar_url ?? null,
+  };
 }

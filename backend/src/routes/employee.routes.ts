@@ -1,12 +1,32 @@
 import { Router } from 'express';
 import { EmployeeController } from '../controllers/EmployeeController';
-import { authenticate } from '../middleware/auth';
+import { authenticate, requireStaff, requireRole, allowSelfOrStaff } from '../middleware/auth';
+import { upload } from '../middleware/upload';
 
 const router = Router();
 const ctrl = new EmployeeController();
 
-router.get('/', authenticate, ctrl.findAll);
-router.get('/:id', authenticate, ctrl.findById);
-router.get('/:id/lots', authenticate, ctrl.getLots);
+router.get('/', authenticate, requireStaff, ctrl.findAll);
+router.post('/', authenticate, requireRole('admin', 'hr', 'manager'), ctrl.create);
+
+// Documents are addressed by document id, so these must be declared before '/:id'.
+router.get('/documents/:docId/download', authenticate, ctrl.downloadDocument);
+router.put('/documents/:docId/verify', authenticate, requireRole('admin', 'hr'), ctrl.verifyDocument);
+router.delete('/documents/:docId', authenticate, requireRole('admin', 'hr'), ctrl.deleteDocument);
+
+router.get('/:id', authenticate, requireStaff, ctrl.findById);
+router.get('/:id/lots', authenticate, requireStaff, ctrl.getLots);
+router.get('/:id/profile', authenticate, allowSelfOrStaff('id'), ctrl.getProfile);
+router.put('/:id/profile', authenticate, requireRole('admin', 'hr', 'manager'), ctrl.updateProfile);
+router.put('/:id/resign', authenticate, requireRole('admin', 'hr'), ctrl.markResigned);
+
+router.get('/:id/documents', authenticate, allowSelfOrStaff('id'), ctrl.listDocuments);
+router.post(
+  '/:id/documents',
+  authenticate,
+  requireRole('admin', 'hr', 'manager'),
+  upload.single('file'),
+  ctrl.uploadDocument,
+);
 
 export default router;

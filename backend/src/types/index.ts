@@ -6,7 +6,9 @@ export type ShapeCategory = 'ROUND' | 'FANCY' | 'BLOCKING';
 export type SalaryPeriodStatus = 'OPEN' | 'LOCKED' | 'PAID';
 export type RateCardLab = 'IGI' | 'GIA' | 'ANY';
 export type AuditChangeType = 'increase' | 'decrease' | 'bulk';
-export type UserRole = 'admin' | 'manager' | 'operator' | 'accountant';
+export type UserRole = 'admin' | 'manager' | 'operator' | 'accountant' | 'hr' | 'employee';
+
+export * from './hrms';
 
 // Database row types (snake_case columns)
 export interface UserRow {
@@ -17,6 +19,11 @@ export interface UserRow {
   role: UserRole;
   is_active: boolean;
   last_login_at: string | null;
+  employee_id: number | null;
+  phone: string | null;
+  avatar_url: string | null;
+  theme: 'light' | 'dark' | 'system';
+  must_change_password: boolean;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -33,6 +40,26 @@ export interface EmployeeRow {
   whatsapp: string | null;
   joined_at: string;
   resigned_at: string | null;
+  address: string | null;
+  city: string | null;
+  dob: string | null;
+  gender: 'MALE' | 'FEMALE' | 'OTHER' | null;
+  blood_group: string | null;
+  aadhaar_number: string | null;
+  pan: string | null;
+  bank_name: string | null;
+  bank_account: string | null;
+  bank_ifsc: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
+  photo_url: string | null;
+  department: string | null;
+  designation: string | null;
+  reporting_manager_id: number | null;
+  monthly_salary: number | null;
+  pf_applicable: boolean;
+  esi_applicable: boolean;
+  shift_id: number | null;
   created_by: number | null;
   updated_by: number | null;
   created_at: string;
@@ -135,6 +162,25 @@ export interface SalaryLineRow {
   account_verified_by: number | null;
   account_verified_at: string | null;
   paid_at: string | null;
+  worker_type: WorkerType | null;
+  paid_days: number;
+  period_days: number;
+  present_days: number;
+  absent_days: number;
+  leave_days: number;
+  ot_hours: number;
+  earn_piece: number;
+  earn_fixed: number;
+  earn_ot: number;
+  gross_amount: number;
+  ded_pf: number;
+  ded_esi: number;
+  ded_pt: number;
+  ded_advance: number;
+  ded_other: number;
+  total_deductions: number;
+  net_amount: number;
+  recalculated_at: string | null;
   created_by: number | null;
   updated_by: number | null;
   created_at: string;
