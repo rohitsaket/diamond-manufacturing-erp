@@ -10,9 +10,9 @@ const gradeColors: Record<string, string> = {
   'A*': 'text-text-primary border-border-default bg-bg-hover',
   'A+++': 'text-text-secondary border-border-default bg-bg-hover',
   'A++': 'text-text-secondary border-border-default bg-bg-hover',
-  'A+': 'text-text-muted border-border-default bg-white',
-  'A': 'text-text-muted border-border-default bg-white',
-  'B': 'text-text-muted border-border-default bg-white',
+  'A+': 'text-text-muted border-border-default bg-bg-card',
+  'A': 'text-text-muted border-border-default bg-bg-card',
+  'B': 'text-text-muted border-border-default bg-bg-card',
 };
 
 function EmployeeModal({ emp, onClose }: { emp: Employee; onClose: () => void }) {
@@ -52,7 +52,7 @@ function EmployeeModal({ emp, onClose }: { emp: Employee; onClose: () => void })
         initial={{ scale: 0.95, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.95, y: 20 }}
-        className="relative bg-white border border-border-default rounded-lg w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-modal"
+        className="relative bg-bg-card border border-border-default rounded-lg w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-modal"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
@@ -195,7 +195,7 @@ export function Employees() {
               placeholder="Search..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="bg-white border border-border-default rounded-md pl-9 pr-3 py-2 text-text-primary text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 placeholder:text-text-muted w-48"
+              className="bg-bg-card border border-border-default rounded-md pl-9 pr-3 py-2 text-text-primary text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 placeholder:text-text-muted w-48"
             />
           </div>
           <div className="flex items-center gap-1">

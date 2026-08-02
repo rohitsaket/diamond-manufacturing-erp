@@ -126,7 +126,7 @@ export function MasterLedger() {
             placeholder="Search lots, workers, shapes..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full bg-white border border-border-default rounded-md pl-9 pr-3 py-2 text-text-primary text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 placeholder:text-text-muted"
+            className="w-full bg-bg-card border border-border-default rounded-md pl-9 pr-3 py-2 text-text-primary text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 placeholder:text-text-muted"
           />
         </div>
         <div className="flex items-center gap-1.5">
@@ -154,7 +154,7 @@ export function MasterLedger() {
       </div>
 
       {/* Summary bar */}
-      <div className="flex items-center gap-6 px-4 py-2.5 bg-white border border-border-default rounded-md text-xs">
+      <div className="flex items-center gap-6 px-4 py-2.5 bg-bg-card border border-border-default rounded-md text-xs">
         <span className="text-text-muted">{filtered.length} lots</span>
         <span className="text-text-muted">Qty: <span className="text-text-secondary font-mono">{totals.qty}</span></span>
         <span className="text-text-muted">Issue: <span className="text-text-primary font-mono">{totals.issueWeight.toFixed(2)} ct</span></span>
@@ -168,7 +168,7 @@ export function MasterLedger() {
       </div>
 
       {/* Table */}
-      <div className="flex-1 min-h-0 overflow-auto rounded-md border border-border-default bg-white">
+      <div className="flex-1 min-h-0 overflow-auto rounded-md border border-border-default bg-bg-card">
         <table className="w-full min-w-max">
           <thead className="sticky top-0 bg-bg-secondary border-b border-border-default z-20">
             <tr>
@@ -184,8 +184,8 @@ export function MasterLedger() {
                 key={lot.id}
                 className="group hover:bg-bg-hover transition-colors"
               >
-                <td className="sticky left-0 z-10 bg-white group-hover:bg-bg-hover px-3 py-2.5 text-text-muted text-[10px] font-mono">{i + 1}</td>
-                <td className="sticky left-10 z-10 bg-white group-hover:bg-bg-hover px-3 py-2.5">
+                <td className="sticky left-0 z-10 bg-bg-card group-hover:bg-bg-hover px-3 py-2.5 text-text-muted text-[10px] font-mono">{i + 1}</td>
+                <td className="sticky left-10 z-10 bg-bg-card group-hover:bg-bg-hover px-3 py-2.5">
                   <div>
                     <p className="text-text-primary text-xs font-semibold font-mono">{lot.lotName}</p>
                     <p className="text-text-muted text-[10px]">{lot.lotId}</p>

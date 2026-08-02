@@ -5,6 +5,18 @@ interface AuthUser {
   email: string;
   name: string;
   role: string;
+  /** Set only for self-service logins; links the account to an employee record. */
+  employeeId?: number | null;
+  theme?: 'light' | 'dark' | 'system';
+  mustChangePassword?: boolean;
+  avatarUrl?: string | null;
+}
+
+/** Roles that may see company-wide screens. Self-service workers may not. */
+export const STAFF_ROLES = ['admin', 'manager', 'operator', 'accountant', 'hr'];
+
+export function isStaffRole(role: string | undefined): boolean {
+  return !!role && STAFF_ROLES.includes(role);
 }
 
 interface LoginResponse {

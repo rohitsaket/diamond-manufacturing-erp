@@ -56,7 +56,7 @@ function NewVersionModal({ activeFrom, onClose, onConfirm }: {
         initial={{ scale: 0.95, y: 16 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.95, y: 16 }}
-        className="relative bg-white border border-border-default rounded-lg w-full max-w-sm p-6 shadow-modal"
+        className="relative bg-bg-card border border-border-default rounded-lg w-full max-w-sm p-6 shadow-modal"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-start justify-between mb-4">
@@ -83,7 +83,7 @@ function NewVersionModal({ activeFrom, onClose, onConfirm }: {
             type="date"
             value={date}
             onChange={e => setDate(e.target.value)}
-            className="w-full bg-white border border-border-default rounded-md px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+            className="w-full bg-bg-card border border-border-default rounded-md px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
           />
         </div>
 
@@ -240,7 +240,7 @@ export function RateCard() {
       </AnimatePresence>
 
       {/* Rate matrix table */}
-      <div className="rounded-md border border-border-default overflow-hidden bg-white">
+      <div className="rounded-md border border-border-default overflow-hidden bg-bg-card">
         <div className="px-4 py-3 border-b border-border-default flex items-center gap-4">
           <span className="text-text-muted text-xs uppercase tracking-wider font-medium">Weight Bucket</span>
           <div className="flex items-center gap-1.5">
@@ -289,7 +289,7 @@ export function RateCard() {
                           type="number"
                           value={editValue}
                           onChange={e => setEditValue(Number(e.target.value))}
-                          className="w-20 bg-white border border-primary/40 rounded-md px-2 py-1 text-primary text-sm font-mono font-bold focus:outline-none focus:ring-1 focus:ring-primary/20"
+                          className="w-20 bg-bg-card border border-primary/40 rounded-md px-2 py-1 text-primary text-sm font-mono font-bold focus:outline-none focus:ring-1 focus:ring-primary/20"
                           autoFocus
                         />
                         <button
@@ -338,7 +338,7 @@ export function RateCard() {
       </div>
 
       {/* Audit trail */}
-      <div className="bg-white border border-border-default rounded-md p-5">
+      <div className="bg-bg-card border border-border-default rounded-md p-5">
         <h3 className="text-text-primary text-sm font-medium mb-4">
           Rate History & Audit Log
           {sessionCount > 0 && (

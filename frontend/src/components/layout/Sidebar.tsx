@@ -1,7 +1,13 @@
-import { LayoutDashboard, Layers, BookOpen, Users, DollarSign, Shield, Database, ChevronRight, Bell, RefreshCw, LogOut } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import {
+  LayoutDashboard, Layers, BookOpen, Users, DollarSign, Shield, Database,
+  ChevronRight, Bell, RefreshCw, LogOut,
+  CalendarCheck, Briefcase, UserPlus, PieChart,
+} from 'lucide-react';
 import { Lot, LOT_SLA_DAYS, LEAKAGE_FLAG_THRESHOLD_PCT } from '../../data/mockData';
 import { useApp } from '../../contexts/AppContext';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth, isStaffRole } from '../../contexts/AuthContext';
+import { leaveApi, notificationApi } from '../../api/hrms';
 
 interface Exception {
   type: 'leakage' | 'overdue' | 'rework';
@@ -61,19 +67,63 @@ interface SidebarProps {
   payrollBadge: string | null;
 }
 
+interface NavItem {
+  id: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  badge: string | null;
+}
+
 export function Sidebar({ activePage, setActivePage, floorBadge, payrollBadge }: SidebarProps) {
   const { lots, refresh } = useApp();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const exceptions = computeExceptions(lots);
+  const isStaff = isStaffRole(user?.role);
 
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: null },
-    { id: 'floor', label: 'Manufacturing', icon: Layers, badge: floorBadge },
-    { id: 'ledger', label: 'Master Ledger', icon: BookOpen, badge: null },
-    { id: 'employees', label: 'Karigars', icon: Users, badge: null },
-    { id: 'payroll', label: 'Salary & Payout', icon: DollarSign, badge: payrollBadge },
-    { id: 'rates', label: 'Rate Card', icon: Shield, badge: null },
-    { id: 'masterdata', label: 'Master Data', icon: Database, badge: null },
+  // Counts for the HRMS badges. Fetched once on mount; a failure just leaves
+  // the badges off rather than breaking navigation.
+  const [pendingLeave, setPendingLeave] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (isStaff) {
+      leaveApi
+        .requests({ status: 'PENDING' })
+        .then((rows) => { if (!cancelled) setPendingLeave(rows.length); })
+        .catch(() => undefined);
+    }
+    notificationApi
+      .unreadCount()
+      .then((r) => { if (!cancelled) setUnreadNotifications(Number(r?.count ?? 0)); })
+      .catch(() => undefined);
+    return () => { cancelled = true; };
+  }, [isStaff]);
+
+  // Self-service worker logins have no access to company-wide screens, so the
+  // staff navigation is hidden for them rather than shown and failing with 403s.
+  const navGroups: { title: string; items: NavItem[] }[] = !isStaff ? [] : [
+    {
+      title: 'Manufacturing',
+      items: [
+        { id: 'dashboard', label: 'MFG Dashboard', icon: LayoutDashboard, badge: null },
+        { id: 'floor', label: 'Manufacturing', icon: Layers, badge: floorBadge },
+        { id: 'ledger', label: 'Master Ledger', icon: BookOpen, badge: null },
+        { id: 'employees', label: 'Karigars', icon: Users, badge: null },
+        { id: 'payroll', label: 'Salary & Payout', icon: DollarSign, badge: payrollBadge },
+        { id: 'rates', label: 'Rate Card', icon: Shield, badge: null },
+        { id: 'masterdata', label: 'Master Data', icon: Database, badge: null },
+      ],
+    },
+    {
+      title: 'HRMS',
+      items: [
+        { id: 'hrdashboard', label: 'HR Dashboard', icon: PieChart, badge: null },
+        { id: 'attendance', label: 'Attendance', icon: CalendarCheck, badge: null },
+        { id: 'hr', label: 'Leave & Advances', icon: Briefcase, badge: pendingLeave > 0 ? String(pendingLeave) : null },
+        { id: 'recruitment', label: 'Recruitment', icon: UserPlus, badge: null },
+      ],
+    },
   ];
 
   return (
@@ -95,7 +145,7 @@ export function Sidebar({ activePage, setActivePage, floorBadge, payrollBadge }:
 
       {/* Role badge */}
       <div className="px-5 py-3 border-b border-border-default">
-        <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-white border border-border-default">
+        <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-bg-card border border-border-default">
           <div className="w-7 h-7 rounded-full bg-bg-hover flex items-center justify-center text-text-secondary text-xs font-bold">M</div>
           <div className="min-w-0">
             <p className="text-text-primary text-xs font-medium truncate">Manufacturing</p>
@@ -106,34 +156,40 @@ export function Sidebar({ activePage, setActivePage, floorBadge, payrollBadge }:
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
-        <p className="px-3 mb-2 text-[10px] uppercase tracking-wider text-text-muted font-medium">Navigation</p>
-        <ul className="space-y-0.5">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activePage === item.id;
-            return (
-              <li key={item.id}>
-                <button
-                  onClick={() => setActivePage(item.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-150 group ${
-                    isActive
-                      ? 'bg-bg-selected text-primary'
-                      : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
-                  }`}
-                >
-                  <Icon size={18} className={isActive ? 'text-primary' : 'text-text-muted group-hover:text-text-secondary'} />
-                  <span className="flex-1 text-left">{item.label}</span>
-                  {item.badge && (
-                    <span className="px-1.5 py-0.5 rounded-full bg-primary text-white text-[10px] font-semibold min-w-[18px] text-center">
-                      {item.badge}
-                    </span>
-                  )}
-                  {isActive && <ChevronRight size={14} className="text-text-muted" />}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+        {navGroups.map((group, groupIndex) => (
+          <div key={group.title} className={groupIndex > 0 ? 'mt-5' : undefined}>
+            <p className="px-3 mb-2 text-[10px] uppercase tracking-wider text-text-muted font-medium">
+              {group.title}
+            </p>
+            <ul className="space-y-0.5">
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const isActive = activePage === item.id;
+                return (
+                  <li key={item.id}>
+                    <button
+                      onClick={() => setActivePage(item.id)}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-150 group ${
+                        isActive
+                          ? 'bg-bg-selected text-primary'
+                          : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
+                      }`}
+                    >
+                      <Icon size={18} className={isActive ? 'text-primary' : 'text-text-muted group-hover:text-text-secondary'} />
+                      <span className="flex-1 text-left">{item.label}</span>
+                      {item.badge && (
+                        <span className="px-1.5 py-0.5 rounded-full bg-primary text-white text-[10px] font-semibold min-w-[18px] text-center">
+                          {item.badge}
+                        </span>
+                      )}
+                      {isActive && <ChevronRight size={14} className="text-text-muted" />}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
 
         {/* Exception feed */}
         <div className="mt-6 px-3">
@@ -163,10 +219,16 @@ export function Sidebar({ activePage, setActivePage, floorBadge, payrollBadge }:
       {/* Bottom actions */}
       <div className="px-3 pb-4 border-t border-border-default pt-3 space-y-0.5">
         <button
-          onClick={() => window.alert('Notifications panel coming soon.')}
+          onClick={() => setActivePage('hrdashboard')}
           className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-text-muted hover:text-text-primary hover:bg-bg-hover transition-colors"
         >
-          <Bell size={16} /> Notifications
+          <Bell size={16} />
+          <span className="flex-1 text-left">Notifications</span>
+          {unreadNotifications > 0 && (
+            <span className="px-1.5 py-0.5 rounded-full bg-danger text-white text-[10px] font-semibold min-w-[18px] text-center">
+              {unreadNotifications}
+            </span>
+          )}
         </button>
         <button
           onClick={() => { void refresh(); }}

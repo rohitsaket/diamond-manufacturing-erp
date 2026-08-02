@@ -84,12 +84,51 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   return res.text() as unknown as Promise<T>;
 }
 
+// Multipart upload: the browser must set its own multipart boundary, so the
+// JSON Content-Type header is deliberately omitted here.
+async function upload<T>(path: string, file: File, fields: Record<string, string> = {}): Promise<T> {
+  const token = tokenStore.get();
+  const form = new FormData();
+  form.append('file', file);
+  for (const [key, value] of Object.entries(fields)) form.append(key, value);
+
+  let res: Response;
+  try {
+    res = await fetch(`${BASE_URL}${path}`, {
+      method: 'POST',
+      body: form,
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
+  } catch {
+    throw new ApiError('Cannot reach the server. Is the backend running?', 0);
+  }
+
+  if (!res.ok) {
+    let message = `Upload failed (${res.status})`;
+    try {
+      const body = await res.json();
+      if (body?.error) message = body.error;
+    } catch {
+      /* non-JSON error body */
+    }
+    if (res.status === 401 && token && onUnauthorized) {
+      onUnauthorized();
+      message = 'Your session has expired. Please sign in again.';
+    }
+    throw new ApiError(message, res.status);
+  }
+
+  return res.json() as Promise<T>;
+}
+
 export const api = {
   get: <T>(path: string): Promise<T> => request<T>(path, { method: 'GET' }),
   post: <T>(path: string, body?: unknown): Promise<T> =>
     request<T>(path, { method: 'POST', body: body === undefined ? undefined : JSON.stringify(body) }),
   put: <T>(path: string, body?: unknown): Promise<T> =>
     request<T>(path, { method: 'PUT', body: body === undefined ? undefined : JSON.stringify(body) }),
+  delete: <T>(path: string): Promise<T> => request<T>(path, { method: 'DELETE' }),
+  upload,
 };
 
 export { BASE_URL };

@@ -40,8 +40,8 @@ body {
 }
 
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -57,6 +57,73 @@ body {
 .scrollbar-thin {
   scrollbar-width: thin;
   scrollbar-color: #D1D5DB transparent;
+}
+
+/* ===== Dark mode (overrides the @theme tokens; utilities read var(--color-*) ===== */
+.dark {
+  --color-bg-primary: #0B1220;
+  --color-bg-secondary: #0F172A;
+  --color-bg-sidebar: #111C2E;
+  --color-bg-card: #16213A;
+  --color-bg-hover: #1E2A45;
+  --color-bg-selected: #1D2A4A;
+  --color-border-default: #24344F;
+  --color-border-light: #1F2E49;
+  --color-text-primary: #E6EAF2;
+  --color-text-secondary: #9AA7BD;
+  --color-text-muted: #6E7D96;
+  --color-primary: #5B8DEF;
+  --color-primary-hover: #4A7BD8;
+  --color-primary-light: #1B2A4A;
+  --color-success: #34C77B;
+  --color-success-light: #12291C;
+  --color-warning: #E0A83E;
+  --color-warning-light: #2B2312;
+  --color-danger: #F26D6D;
+  --color-danger-light: #2E1717;
+  --color-info: #5B8DEF;
+  --color-info-light: #16233F;
+  --shadow-card: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-dropdown: 0 4px 14px rgba(0,0,0,.45);
+  --shadow-modal: 0 8px 24px rgba(0,0,0,.5);
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #33415E;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #4A5A7C;
+}
+
+/* ===== Skeleton shimmer ===== */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-bg-hover);
+  border-radius: 6px;
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent);
+  animation: shimmer 1.4s infinite linear;
+  transform: translateX(-100%);
+}
+.dark .skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
+}
+
+/* ===== Fade-in on mount ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up {
+  animation: fadeInUp .22s ease-out both;
 }
 
 .tabular-nums {

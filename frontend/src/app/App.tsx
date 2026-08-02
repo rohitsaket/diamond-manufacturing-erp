@@ -11,6 +11,10 @@ import { Employees } from '../pages/Employees/Employees';
 import { Payroll } from '../pages/Payroll/Payroll';
 import { RateCard } from '../pages/RateCard/RateCard';
 import { MasterData } from '../pages/MasterData/MasterData';
+import { Attendance } from '../pages/Attendance/Attendance';
+import { HR } from '../pages/HR/HR';
+import { Recruitment } from '../pages/Recruitment/Recruitment';
+import { HRDashboard } from '../pages/HRDashboard/HRDashboard';
 import { LoginPage } from '../pages/Login/Login';
 import { LOT_SLA_DAYS } from '../data/mockData';
 
@@ -89,13 +93,17 @@ function AppInner() {
     : 0;
 
   const pages: Record<string, React.ReactNode> = {
-    dashboard: <Dashboard />,
+    dashboard: <Dashboard onNavigate={setActivePage} />,
     floor: <FloorManager />,
     ledger: <MasterLedger />,
     employees: <Employees />,
     payroll: <Payroll />,
     rates: <RateCard />,
     masterdata: <MasterData />,
+    hrdashboard: <HRDashboard onNavigate={setActivePage} />,
+    attendance: <Attendance />,
+    hr: <HR />,
+    recruitment: <Recruitment />,
   };
 
   return (
@@ -109,7 +117,7 @@ function AppInner() {
 
       <main className="flex-1 min-h-screen flex flex-col">
         {/* Top bar */}
-        <div className="sticky top-0 z-30 border-b border-border-default bg-white px-6 py-3 flex items-center justify-between">
+        <div className="sticky top-0 z-30 border-b border-border-default bg-bg-card px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2 text-text-muted text-xs font-medium">
             <span>Harene Diamond Manufacturing</span>
             <span>·</span>

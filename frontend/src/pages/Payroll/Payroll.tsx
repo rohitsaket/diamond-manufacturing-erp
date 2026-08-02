@@ -198,7 +198,7 @@ export function Payroll() {
       </div>
 
       {/* Payroll table */}
-      <div className="rounded-md border border-border-default overflow-hidden bg-white">
+      <div className="rounded-md border border-border-default overflow-hidden bg-bg-card">
         <table className="w-full">
           <thead className="bg-bg-secondary border-b border-border-default">
             <tr>

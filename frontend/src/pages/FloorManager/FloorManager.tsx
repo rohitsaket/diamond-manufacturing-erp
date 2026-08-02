@@ -6,7 +6,7 @@ import { StatusChip } from '../../components/common/StatusChip';
 import { useApp } from '../../contexts/AppContext';
 
 const COLUMNS: { status: LotStatus; label: string; color: string; bg: string }[] = [
-  { status: 'ISSUED', label: 'Issued', color: 'text-text-muted', bg: 'bg-white border-border-default' },
+  { status: 'ISSUED', label: 'Issued', color: 'text-text-muted', bg: 'bg-bg-card border-border-default' },
   { status: 'IN_PROGRESS', label: 'In Progress', color: 'text-warning', bg: 'bg-bg-secondary border-border-default' },
   { status: 'RECEIVED', label: 'Received', color: 'text-primary', bg: 'bg-bg-secondary border-border-default' },
   { status: 'VERIFIED', label: 'Verified', color: 'text-success', bg: 'bg-bg-secondary border-border-default' },
@@ -38,7 +38,7 @@ interface ReceiveForm {
   receivedDate: string;
 }
 
-const INPUT_CLS = 'w-full bg-white border border-border-default rounded-md px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-colors placeholder:text-text-muted';
+const INPUT_CLS = 'w-full bg-bg-card border border-border-default rounded-md px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-colors placeholder:text-text-muted';
 const LABEL_CLS = 'text-text-secondary text-[10px] uppercase tracking-wider font-medium block mb-1';
 
 function LotCard({ lot, onClick }: { lot: Lot; onClick: () => void }) {
@@ -52,7 +52,7 @@ function LotCard({ lot, onClick }: { lot: Lot; onClick: () => void }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       onClick={onClick}
-      className={`bg-white border rounded-md p-3 cursor-pointer hover:border-primary/30 transition-colors duration-150 group ${isOverdue ? 'border-danger/40' : 'border-border-default'}`}
+      className={`bg-bg-card border rounded-md p-3 cursor-pointer hover:border-primary/30 transition-colors duration-150 group ${isOverdue ? 'border-danger/40' : 'border-border-default'}`}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <div>
@@ -131,7 +131,7 @@ function IssueLotPanel({ onClose, onSubmit }: { onClose: () => void; onSubmit: (
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 320, opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="w-80 bg-white border-l border-border-default flex flex-col"
+      className="w-80 bg-bg-card border-l border-border-default flex flex-col"
     >
       <div className="p-4 border-b border-border-default flex items-center justify-between">
         <h3 className="text-text-primary font-semibold text-sm">Issue New Lot</h3>
@@ -268,7 +268,7 @@ function ReceiveLotPanel({
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 320, opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="w-80 bg-white border-l border-border-default flex flex-col"
+      className="w-80 bg-bg-card border-l border-border-default flex flex-col"
     >
       <div className="p-4 border-b border-border-default flex items-center justify-between">
         <div>
@@ -478,7 +478,7 @@ export function FloorManager() {
               placeholder="Search lots, workers..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full bg-white border border-border-default rounded-md pl-9 pr-3 py-2 text-text-primary text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 placeholder:text-text-muted"
+              className="w-full bg-bg-card border border-border-default rounded-md pl-9 pr-3 py-2 text-text-primary text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 placeholder:text-text-muted"
             />
           </div>
           <button
@@ -548,7 +548,7 @@ export function FloorManager() {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 320, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="w-80 bg-white border-l border-border-default flex flex-col"
+            className="w-80 bg-bg-card border-l border-border-default flex flex-col"
           >
             <div className="p-4 border-b border-border-default flex items-center justify-between">
               <div>
