@@ -1,13 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { profileApi } from '../../../api/profile';
-import type {
-  EmployeeSkill,
-  ExperienceLevel,
-  Skill,
-  SkillCategory,
-  SkillGapRow,
-} from '../../../types/profile';
+import type { SkillGapResult } from '../../../api/profile';
+import type { EmployeeSkill, ExperienceLevel, Skill, SkillCategory } from '../../../types/profile';
 import {
   BTN_PRIMARY,
   BTN_SECONDARY,
@@ -104,7 +99,7 @@ const EMPTY_ADD: AddDraft = {
 
 export function SkillsSection({ employeeId }: { employeeId: number }) {
   const [skills, setSkills] = useState<EmployeeSkill[]>([]);
-  const [gaps, setGaps] = useState<SkillGapRow[]>([]);
+  const [gap, setGap] = useState<SkillGapResult | null>(null);
   const [master, setMaster] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -119,12 +114,14 @@ export function SkillsSection({ employeeId }: { employeeId: number }) {
     setLoading(true);
     Promise.all([
       profileApi.skills(employeeId),
-      profileApi.skillGap(employeeId).catch(() => [] as SkillGapRow[]),
+      profileApi
+        .skillGap(employeeId)
+        .catch((e: unknown): SkillGapResult => ({ available: false, message: errMsg(e), rows: [] })),
       profileApi.skillMaster().catch(() => [] as Skill[]),
     ])
-      .then(([rows, gapRows, masterRows]) => {
+      .then(([rows, gapResult, masterRows]) => {
         setSkills(rows);
-        setGaps(gapRows);
+        setGap(gapResult);
         setMaster(masterRows);
         setError(null);
       })
@@ -314,13 +311,14 @@ export function SkillsSection({ employeeId }: { employeeId: number }) {
             <h4 className="text-text-primary font-semibold text-sm">Skill gap</h4>
             <p className="text-text-muted text-xs mt-0.5">Current rating against the target set for this grade</p>
           </div>
-          {gaps.length === 0 ? (
+          {gap === null || !gap.available || gap.rows.length === 0 ? (
             <p className="text-text-muted text-xs">
-              No skill targets are defined for this grade, so gap analysis is unavailable.
+              {gap?.message ??
+                'No skill targets are defined for this grade, so gap analysis is unavailable.'}
             </p>
           ) : (
             <TableShell headers={['Skill', 'Target', 'Current', 'Gap']}>
-              {gaps.map((g) => (
+              {gap.rows.map((g) => (
                 <tr key={g.skillId} className="hover:bg-bg-hover transition-colors">
                   <td className="px-3 py-2 text-xs text-text-primary">{g.skillName}</td>
                   <td className="px-3 py-2 text-xs text-text-secondary tabular-nums">{g.targetRating}</td>

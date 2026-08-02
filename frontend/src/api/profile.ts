@@ -19,6 +19,25 @@ import type {
 } from '../types/profile';
 import type { EmployeeProfile, EmployeeDocument } from '../types/hrms';
 
+/**
+ * Skill-gap analysis is only meaningful when the employee's grade has target
+ * ratings configured, so the server reports availability explicitly rather than
+ * returning an empty list that would read as a perfect score.
+ */
+export interface SkillGapResult {
+  available: boolean;
+  message?: string;
+  rows: SkillGapRow[];
+}
+
+export interface ExperienceSummary {
+  priorMonths: number;
+  currentTenureMonths: number;
+  totalMonths: number;
+  totalYears: number;
+  display: string;
+}
+
 const qs = (params: Record<string, string | number | boolean | undefined | null>): string => {
   const search = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
@@ -80,7 +99,7 @@ export const profileApi = {
   deleteLanguage: (itemId: number) => api.delete<{ success: boolean }>(`/profile/languages/${itemId}`),
 
   experience: (id: number) => api.get<ExperienceRecord[]>(`/profile/${id}/experience`),
-  totalExperience: (id: number) => api.get<{ months: number }>(`/profile/${id}/experience/total`),
+  totalExperience: (id: number) => api.get<ExperienceSummary>(`/profile/${id}/experience/total`),
   addExperience: (id: number, body: Partial<ExperienceRecord>) =>
     api.post<ExperienceRecord>(`/profile/${id}/experience`, body),
   updateExperience: (itemId: number, body: Partial<ExperienceRecord>) =>
@@ -98,7 +117,7 @@ export const profileApi = {
   setSkill: (id: number, body: Partial<EmployeeSkill>) => api.put<EmployeeSkill>(`/profile/${id}/skills`, body),
   removeSkill: (id: number, skillId: number) =>
     api.delete<{ success: boolean }>(`/profile/${id}/skills/${skillId}`),
-  skillGap: (id: number) => api.get<SkillGapRow[]>(`/profile/${id}/skill-gap`),
+  skillGap: (id: number) => api.get<SkillGapResult>(`/profile/${id}/skill-gap`),
   skillMaster: (category?: string) => api.get<Skill[]>(`/profile/skills${qs({ category })}`),
   createSkill: (body: Partial<Skill>) => api.post<Skill>('/profile/skills', body),
 

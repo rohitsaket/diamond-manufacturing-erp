@@ -14,6 +14,7 @@ import { MasterData } from '../pages/MasterData/MasterData';
 import { Attendance } from '../pages/Attendance/Attendance';
 import { HR } from '../pages/HR/HR';
 import { Recruitment } from '../pages/Recruitment/Recruitment';
+import { EmployeeProfile } from '../pages/EmployeeProfile/EmployeeProfile';
 import { HRDashboard } from '../pages/HRDashboard/HRDashboard';
 import { LoginPage } from '../pages/Login/Login';
 import { LOT_SLA_DAYS } from '../data/mockData';
@@ -113,6 +114,7 @@ function AppInner() {
     attendance: <Attendance />,
     hr: <HR />,
     recruitment: <Recruitment />,
+    hrprofile: <EmployeeProfile onNavigate={setActivePage} />,
   };
 
   return (

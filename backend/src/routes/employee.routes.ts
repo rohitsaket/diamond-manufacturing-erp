@@ -9,10 +9,10 @@ const ctrl = new EmployeeController();
 router.get('/', authenticate, requireStaff, ctrl.findAll);
 router.post('/', authenticate, requireRole('admin', 'hr', 'manager'), ctrl.create);
 
-// Documents are addressed by document id, so these must be declared before '/:id'.
 // Literal paths must be declared before '/:id' or the param route swallows them.
 router.get('/directory', authenticate, requireStaff, ctrl.getDirectory);
 
+// Documents are addressed by document id, so these must be declared before '/:id'.
 router.get('/documents/:docId/download', authenticate, ctrl.downloadDocument);
 router.put('/documents/:docId/verify', authenticate, requireRole('admin', 'hr'), ctrl.verifyDocument);
 router.delete('/documents/:docId', authenticate, requireRole('admin', 'hr'), ctrl.deleteDocument);
