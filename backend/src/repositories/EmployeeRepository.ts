@@ -1021,6 +1021,9 @@ export class EmployeeRepository extends BaseRepository {
       periodSalary: Number(r.period_salary ?? 0),
       whatsapp: r.whatsapp,
       joinedAt: toDateString(r.joined_at),
+      department: r.department ?? null,
+      branch: r.branch ?? null,
+      designation: r.designation ?? null,
     };
   }
 
@@ -1046,6 +1049,9 @@ export class EmployeeRepository extends BaseRepository {
       periodSalary,
       whatsapp: row.whatsapp,
       joinedAt: toDateString(row.joined_at),
+      department: row.department ?? null,
+      branch: (row as EmployeeRow & { branch?: string | null }).branch ?? null,
+      designation: row.designation ?? null,
     };
   }
 }

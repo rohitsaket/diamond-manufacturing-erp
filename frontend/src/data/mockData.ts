@@ -23,6 +23,10 @@ export interface Employee {
   periodSalary: number;
   whatsapp?: string;
   joinedAt: string;
+  /** Org placement, present once the employee has HR profile data. */
+  department?: string | null;
+  branch?: string | null;
+  designation?: string | null;
 }
 
 export interface Lot {

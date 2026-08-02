@@ -225,6 +225,10 @@ export interface EmployeeResponse {
   periodSalary: number;
   whatsapp: string | null;
   joinedAt: string;
+  /** Org placement, surfaced so directory and compliance filters can populate. */
+  department?: string | null;
+  branch?: string | null;
+  designation?: string | null;
 }
 
 export interface LotResponse {

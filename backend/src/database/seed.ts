@@ -55,7 +55,10 @@ async function run(): Promise<void> {
       'advance_recoveries', 'advances',
       'leave_requests', 'leave_balances', 'leave_types',
       'attendance_records', 'holidays', 'shifts',
-      'employee_documents', 'candidates', 'job_openings',
+      // Document management
+      'document_audit_logs', 'document_shares', 'document_comments',
+      'document_requirements', 'employee_documents', 'document_types',
+      'candidates', 'job_openings',
       // Employee profile
       'employee_timeline', 'employee_experience', 'employee_languages',
       'employee_certifications', 'employee_skills', 'skill_targets', 'skills',

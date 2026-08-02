@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   LayoutDashboard, Layers, BookOpen, Users, DollarSign, Shield, Database,
   ChevronRight, ChevronDown, Bell, RefreshCw, LogOut,
-  CalendarCheck, Briefcase, UserPlus, PieChart, IdCard,
+  CalendarCheck, Briefcase, UserPlus, PieChart, IdCard, FolderLock,
 } from 'lucide-react';
 import { Lot, LOT_SLA_DAYS, LEAKAGE_FLAG_THRESHOLD_PCT } from '../../data/mockData';
 import { useApp } from '../../contexts/AppContext';
@@ -148,6 +148,7 @@ export function Sidebar({
       items: [
         { id: 'hrdashboard', label: 'Dashboard', icon: PieChart, badge: null, children: DASHBOARD_SECTION_ITEMS },
         { id: 'hrprofile', label: 'Employee Profile', icon: IdCard, badge: null },
+        { id: 'documents', label: 'Documents', icon: FolderLock, badge: null },
         { id: 'attendance', label: 'Attendance', icon: CalendarCheck, badge: null },
         { id: 'hr', label: 'Leave & Advances', icon: Briefcase, badge: pendingLeave > 0 ? String(pendingLeave) : null },
         { id: 'recruitment', label: 'Recruitment', icon: UserPlus, badge: null },
