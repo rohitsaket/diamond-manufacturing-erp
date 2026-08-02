@@ -1,0 +1,25 @@
+-- Family members, dependents and nominees
+CREATE TABLE IF NOT EXISTS employee_family (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT UNSIGNED NOT NULL,
+  relation ENUM('FATHER', 'MOTHER', 'SPOUSE', 'CHILD', 'SIBLING', 'GUARDIAN', 'OTHER') NOT NULL,
+  full_name VARCHAR(160) NOT NULL,
+  dob DATE NULL,
+  occupation VARCHAR(120) NULL,
+  phone VARCHAR(20) NULL,
+  is_dependent BOOLEAN NOT NULL DEFAULT false,
+  is_nominee BOOLEAN NOT NULL DEFAULT false,
+  nominee_share_pct DECIMAL(5, 2) NULL,
+  aadhaar_number VARCHAR(12) NULL,
+  notes VARCHAR(255) NULL,
+  created_by INT UNSIGNED NULL,
+  updated_by INT UNSIGNED NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL,
+  FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_family_employee (employee_id),
+  INDEX idx_family_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

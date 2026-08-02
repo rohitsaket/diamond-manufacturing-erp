@@ -2,6 +2,16 @@ import { Request, Response } from 'express';
 import { EmployeeService } from '../services/EmployeeService';
 import { EmployeeDocumentService } from '../services/EmployeeDocumentService';
 
+/** Shared id guard for the `/:id/...` routes. */
+function parseEmployeeId(req: Request, res: Response): number | null {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id)) {
+    res.status(400).json({ error: 'Invalid employee id' });
+    return null;
+  }
+  return id;
+}
+
 export class EmployeeController {
   private service = new EmployeeService();
   private documentService = new EmployeeDocumentService();
@@ -53,6 +63,77 @@ export class EmployeeController {
       res.json(await this.service.getProfile(id));
     } catch (err: any) {
       const status = err.message === 'Employee not found' ? 404 : 500;
+      res.status(status).json({ error: err.message });
+    }
+  };
+
+  /** Core profile aggregate: personal, contact, employment, org, bank, payroll. */
+  getFullProfile = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const id = parseEmployeeId(req, res);
+      if (id === null) return;
+      res.json(await this.service.getFullProfile(id));
+    } catch (err: any) {
+      const status = err.message === 'Employee not found' ? 404 : 500;
+      res.status(status).json({ error: err.message });
+    }
+  };
+
+  getEmploymentDetails = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const id = parseEmployeeId(req, res);
+      if (id === null) return;
+      res.json(await this.service.getEmploymentDetails(id));
+    } catch (err: any) {
+      const status = err.message === 'Employee not found' ? 404 : 500;
+      res.status(status).json({ error: err.message });
+    }
+  };
+
+  getOrganizationDetails = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const id = parseEmployeeId(req, res);
+      if (id === null) return;
+      res.json(await this.service.getOrganizationDetails(id));
+    } catch (err: any) {
+      const status = err.message === 'Employee not found' ? 404 : 500;
+      res.status(status).json({ error: err.message });
+    }
+  };
+
+  getCompleteness = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const id = parseEmployeeId(req, res);
+      if (id === null) return;
+      res.json(await this.service.getProfileCompleteness(id));
+    } catch (err: any) {
+      const status = err.message === 'Employee not found' ? 404 : 500;
+      res.status(status).json({ error: err.message });
+    }
+  };
+
+  /** Lightweight people directory (staff only). */
+  getDirectory = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { search, department, branch, employmentType, workStatus } = req.query as Record<string, string>;
+      res.json(await this.service.getDirectory({ search, department, branch, employmentType, workStatus }));
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  };
+
+  uploadPhoto = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const id = parseEmployeeId(req, res);
+      if (id === null) return;
+      if (!req.file) {
+        res.status(400).json({ error: 'No file was uploaded' });
+        return;
+      }
+      const profile = await this.service.updatePhoto(id, req.file, req.user!.userId, req.user!.name);
+      res.json(profile);
+    } catch (err: any) {
+      const status = err.message === 'Employee not found' ? 404 : 400;
       res.status(status).json({ error: err.message });
     }
   };

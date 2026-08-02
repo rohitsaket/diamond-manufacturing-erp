@@ -1,0 +1,26 @@
+-- Education history
+CREATE TABLE IF NOT EXISTS employee_education (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT UNSIGNED NOT NULL,
+  level ENUM('SCHOOL', 'HIGHER_SECONDARY', 'DIPLOMA', 'GRADUATION', 'POST_GRADUATION', 'DOCTORATE', 'OTHER') NOT NULL,
+  degree VARCHAR(160) NULL,
+  specialization VARCHAR(160) NULL,
+  institution VARCHAR(200) NULL,
+  board_university VARCHAR(200) NULL,
+  passing_year SMALLINT UNSIGNED NULL,
+  grade_value DECIMAL(6, 2) NULL,
+  grade_type ENUM('PERCENTAGE', 'CGPA', 'GRADE') NULL DEFAULT 'PERCENTAGE',
+  document_id INT UNSIGNED NULL,
+  notes VARCHAR(255) NULL,
+  created_by INT UNSIGNED NULL,
+  updated_by INT UNSIGNED NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL,
+  FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+  FOREIGN KEY (document_id) REFERENCES employee_documents(id) ON DELETE SET NULL,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_education_employee (employee_id),
+  INDEX idx_education_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -1,0 +1,26 @@
+-- Professional certifications and licences
+CREATE TABLE IF NOT EXISTS employee_certifications (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT UNSIGNED NOT NULL,
+  name VARCHAR(200) NOT NULL,
+  cert_type ENUM('PROFESSIONAL', 'TECHNICAL', 'LICENSE', 'OTHER') NOT NULL DEFAULT 'PROFESSIONAL',
+  issuing_authority VARCHAR(200) NULL,
+  credential_id VARCHAR(120) NULL,
+  issued_on DATE NULL,
+  valid_until DATE NULL,
+  renewal_date DATE NULL,
+  document_id INT UNSIGNED NULL,
+  notes VARCHAR(255) NULL,
+  created_by INT UNSIGNED NULL,
+  updated_by INT UNSIGNED NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL,
+  FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+  FOREIGN KEY (document_id) REFERENCES employee_documents(id) ON DELETE SET NULL,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_certifications_employee (employee_id),
+  INDEX idx_certifications_valid_until (valid_until),
+  INDEX idx_certifications_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

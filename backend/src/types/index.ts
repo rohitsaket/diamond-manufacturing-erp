@@ -9,6 +9,7 @@ export type AuditChangeType = 'increase' | 'decrease' | 'bulk';
 export type UserRole = 'admin' | 'manager' | 'operator' | 'accountant' | 'hr' | 'employee';
 
 export * from './hrms';
+export * from './profile';
 
 // Database row types (snake_case columns)
 export interface UserRow {

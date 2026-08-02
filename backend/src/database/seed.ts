@@ -56,6 +56,10 @@ async function run(): Promise<void> {
       'leave_requests', 'leave_balances', 'leave_types',
       'attendance_records', 'holidays', 'shifts',
       'employee_documents', 'candidates', 'job_openings',
+      // Employee profile
+      'employee_timeline', 'employee_experience', 'employee_languages',
+      'employee_certifications', 'employee_skills', 'skill_targets', 'skills',
+      'employee_education', 'employee_family', 'employee_settings',
       // Engagement + dashboard
       'training_enrollments', 'trainings',
       'asset_assignments', 'assets',

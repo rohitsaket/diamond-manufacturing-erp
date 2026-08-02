@@ -1,10 +1,29 @@
-import { EmployeeRepository, CreateEmployeeInput, UpdateProfileInput } from '../repositories/EmployeeRepository';
+import {
+  EmployeeRepository,
+  CreateEmployeeInput,
+  UpdateProfileInput,
+  DirectoryFilters,
+} from '../repositories/EmployeeRepository';
 import { LotRepository } from '../repositories/LotRepository';
 import { ActivityRepository } from '../repositories/ActivityRepository';
 import { isValidDateString } from '../utils/dateUtils';
+import { FullProfileResponse, EmploymentType, MaritalStatus } from '../types/profile';
 
 const WORKER_TYPES = ['PIECE_RATE', 'DHAR', 'MAXI'];
 const GENDERS = ['MALE', 'FEMALE', 'OTHER'];
+const MARITAL_STATUSES: MaritalStatus[] = ['SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED', 'OTHER'];
+const EMPLOYMENT_TYPES: EmploymentType[] = ['PERMANENT', 'CONTRACT', 'PROBATION', 'TRAINEE', 'CONSULTANT'];
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+/**
+ * The slice of the profile aggregate owned by this service. Family, education,
+ * skills, certifications, languages, experience, timeline and settings are
+ * sub-resources served by their own endpoints.
+ */
+export type CoreFullProfileResponse = Omit<
+  FullProfileResponse,
+  'family' | 'education' | 'skills' | 'certifications' | 'languages' | 'experience' | 'timeline' | 'settings'
+>;
 
 export class EmployeeService {
   private empRepo = new EmployeeRepository();
@@ -28,6 +47,156 @@ export class EmployeeService {
     const profile = await this.empRepo.getProfile(id);
     if (!profile) throw new Error('Employee not found');
     return profile;
+  }
+
+  async getEmploymentDetails(id: number) {
+    const details = await this.empRepo.getEmploymentDetails(id);
+    if (!details) throw new Error('Employee not found');
+    return details;
+  }
+
+  async getOrganizationDetails(id: number) {
+    const org = await this.empRepo.getOrganizationDetails(id);
+    if (!org) throw new Error('Employee not found');
+    return org;
+  }
+
+  async getProfileCompleteness(id: number) {
+    const rows = await this.empRepo.getProfileCompleteness(id);
+    if (!rows) throw new Error('Employee not found');
+    return rows;
+  }
+
+  async getDirectory(filters: DirectoryFilters = {}) {
+    return this.empRepo.getDirectory(filters);
+  }
+
+  /**
+   * Everything the profile page needs from the core employee record, grouped
+   * into the sections the UI renders. Sub-resources (family, education, …) are
+   * fetched from their own endpoints, so their arrays come back empty here.
+   */
+  async getFullProfile(id: number): Promise<CoreFullProfileResponse> {
+    const [p, employment, organization, completeness] = await Promise.all([
+      this.empRepo.getProfile(id),
+      this.empRepo.getEmploymentDetails(id),
+      this.empRepo.getOrganizationDetails(id),
+      this.empRepo.getProfileCompleteness(id),
+    ]);
+    if (!p || !employment || !organization || !completeness) throw new Error('Employee not found');
+
+    // Built as a plain object so the empty sub-resource arrays can still ship on
+    // the wire while the declared return type stays limited to what we own.
+    const result = {
+      personal: {
+        employeeId: p.employeeId,
+        empCode: p.empCode,
+        fullName: p.fullName,
+        shortName: p.shortName,
+        preferredName: p.preferredName,
+        dob: p.dob,
+        gender: p.gender,
+        maritalStatus: p.maritalStatus,
+        bloodGroup: p.bloodGroup,
+        nationality: p.nationality,
+        religion: p.religion,
+        hasDisability: p.hasDisability,
+        disabilityDetails: p.disabilityDetails,
+        biography: p.biography,
+        photoUrl: p.photoUrl,
+        aadhaarMasked: p.aadhaarMasked,
+        hasAadhaar: p.hasAadhaar,
+        pan: p.pan,
+        passportMasked: p.passportMasked,
+        hasPassport: p.hasPassport,
+        passportExpiry: p.passportExpiry,
+        visaNumber: p.visaNumber,
+        visaExpiry: p.visaExpiry,
+        drivingLicense: p.drivingLicense,
+        voterId: p.voterId,
+        taxId: p.taxId,
+      },
+      contact: {
+        mobile: p.mobile,
+        alternateMobile: p.alternateMobile,
+        whatsapp: p.whatsapp,
+        personalEmail: p.personalEmail,
+        officialEmail: p.officialEmail,
+        address: p.address,
+        permanentAddress: p.permanentAddress,
+        city: p.city,
+        state: p.state,
+        country: p.country,
+        postalCode: p.postalCode,
+        contactPrefEmail: p.contactPrefEmail,
+        contactPrefSms: p.contactPrefSms,
+        contactPrefWhatsapp: p.contactPrefWhatsapp,
+        emergencyContactName: p.emergencyContactName,
+        emergencyContactPhone: p.emergencyContactPhone,
+        emergencyContactRelation: p.emergencyContactRelation,
+        emergencyContactAddress: p.emergencyContactAddress,
+        emergencyAltName: p.emergencyAltName,
+        emergencyAltPhone: p.emergencyAltPhone,
+        emergencyAltRelation: p.emergencyAltRelation,
+        medicalContactName: p.medicalContactName,
+        medicalContactPhone: p.medicalContactPhone,
+      },
+      employment,
+      organization,
+      bank: {
+        bankName: p.bankName,
+        bankAccount: p.bankAccount,
+        bankIfsc: p.bankIfsc,
+        bankBranch: p.bankBranch,
+        upiId: p.upiId,
+        isSalaryAccount: p.isSalaryAccount,
+      },
+      payroll: {
+        monthlySalary: p.monthlySalary,
+        payGrade: p.payGrade,
+        salaryStructure: p.salaryStructure,
+        costCenter: p.costCenter,
+        payrollGroup: p.payrollGroup,
+        pfApplicable: p.pfApplicable,
+        esiApplicable: p.esiApplicable,
+        gratuityApplicable: p.gratuityApplicable,
+        insurancePolicyNo: p.insurancePolicyNo,
+        uanNumber: p.uanNumber,
+        esicNumber: p.esicNumber,
+      },
+      family: [],
+      education: [],
+      skills: [],
+      certifications: [],
+      languages: [],
+      experience: [],
+      timeline: [],
+      completeness,
+    };
+
+    return result;
+  }
+
+  /** Replaces the profile photo with an already-stored multer upload. */
+  async updatePhoto(id: number, file: Express.Multer.File, userId: number, actorName?: string) {
+    if (!file) throw new Error('A photo file is required');
+    if (!file.mimetype.startsWith('image/')) throw new Error('The profile photo must be an image file');
+
+    const employee = await this.empRepo.findRowById(id);
+    if (!employee) throw new Error('Employee not found');
+
+    await this.empRepo.updateProfile(id, { photoUrl: file.filename }, userId);
+    await this.activityRepo.log({
+      actorUserId: userId,
+      actorName: actorName ?? null,
+      employeeId: id,
+      entityType: 'employee',
+      entityId: id,
+      action: 'PHOTO_UPDATED',
+      summary: `${actorName ?? 'Someone'} updated the profile photo of ${employee.full_name}`,
+    });
+
+    return this.empRepo.getProfile(id);
   }
 
   async create(data: CreateEmployeeInput, userId: number, actorName: string) {
@@ -89,6 +258,71 @@ export class EmployeeService {
     }
     if (data.reportingManagerId && Number(data.reportingManagerId) === id) {
       throw new Error('An employee cannot report to themselves');
+    }
+
+    // --- Extended profile validation ----------------------------------------
+    if (data.personalEmail) {
+      const email = String(data.personalEmail).trim().toLowerCase();
+      if (!EMAIL_RE.test(email)) throw new Error('Personal email is not a valid email address');
+      data.personalEmail = email;
+    }
+    if (data.officialEmail) {
+      const email = String(data.officialEmail).trim().toLowerCase();
+      if (!EMAIL_RE.test(email)) throw new Error('Official email is not a valid email address');
+      data.officialEmail = email;
+    }
+    if (data.postalCode) {
+      const code = String(data.postalCode).trim();
+      if (!/^\d{6}$/.test(code)) throw new Error('Postal code must be 6 digits');
+      data.postalCode = code;
+    }
+    for (const [field, label] of [
+      ['passportExpiry', 'Passport expiry'],
+      ['visaExpiry', 'Visa expiry'],
+      ['confirmationDate', 'Confirmation date'],
+      ['retirementDate', 'Retirement date'],
+    ] as const) {
+      const value = data[field];
+      if (value && !isValidDateString(String(value))) {
+        throw new Error(`${label} must be YYYY-MM-DD`);
+      }
+    }
+    if (data.probationMonths !== undefined && data.probationMonths !== null && data.probationMonths !== ('' as any)) {
+      const months = Number(data.probationMonths);
+      if (!Number.isFinite(months) || months < 0 || months > 36) {
+        throw new Error('Probation months must be between 0 and 36');
+      }
+      data.probationMonths = months;
+    }
+    if (data.noticePeriodDays !== undefined && data.noticePeriodDays !== null && data.noticePeriodDays !== ('' as any)) {
+      const days = Number(data.noticePeriodDays);
+      if (!Number.isFinite(days) || days < 0 || days > 180) {
+        throw new Error('Notice period must be between 0 and 180 days');
+      }
+      data.noticePeriodDays = days;
+    }
+    if (data.nationality && String(data.nationality).trim().length > 80) {
+      throw new Error('Nationality cannot exceed 80 characters');
+    }
+    if (data.religion && String(data.religion).trim().length > 80) {
+      throw new Error('Religion cannot exceed 80 characters');
+    }
+    if (data.hrPartnerId && Number(data.hrPartnerId) === id) {
+      throw new Error('An employee cannot be their own HR partner');
+    }
+    if (data.maritalStatus) {
+      const status = String(data.maritalStatus).toUpperCase() as MaritalStatus;
+      if (!MARITAL_STATUSES.includes(status)) {
+        throw new Error(`Marital status must be one of ${MARITAL_STATUSES.join(', ')}`);
+      }
+      data.maritalStatus = status;
+    }
+    if (data.employmentType) {
+      const type = String(data.employmentType).toUpperCase() as EmploymentType;
+      if (!EMPLOYMENT_TYPES.includes(type)) {
+        throw new Error(`Employment type must be one of ${EMPLOYMENT_TYPES.join(', ')}`);
+      }
+      data.employmentType = type;
     }
 
     await this.empRepo.updateProfile(id, data, userId);
