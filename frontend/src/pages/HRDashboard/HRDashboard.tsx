@@ -31,6 +31,14 @@ import { KpiTile } from './KpiTile';
 import { WidgetCard, WidgetEmpty, WidgetUnavailable } from './WidgetCard';
 import { NotificationPanel } from './NotificationPanel';
 import { ActivityFeed } from './ActivityFeed';
+import { EmployeeSection } from './sections/EmployeeSection';
+import { ManagerSection } from './sections/ManagerSection';
+import { WidgetsSection } from './sections/WidgetsSection';
+import { KpiCardsSection } from './sections/KpiCardsSection';
+import { QuickActionsSection } from './sections/QuickActionsSection';
+import { NotificationsSection } from './sections/NotificationsSection';
+import { CalendarSection } from './sections/CalendarSection';
+import { ActivitySection } from './sections/ActivitySection';
 
 // ---------------------------------------------------------------------------
 // Defensive readers. Every widget key may be absent, empty, the wrong shape or
@@ -179,16 +187,62 @@ function LinkAction({ label, onClick }: { label: string; onClick: () => void }) 
   );
 }
 
-const TABS = [
-  { id: 'hr', label: 'HR Overview' },
-  { id: 'executive', label: 'Executive' },
-];
+/**
+ * Dashboard sections. The first four are role dashboards backed by their own
+ * API payload; the rest are cross-cutting views that fetch their own data.
+ */
+export const DASHBOARD_SECTIONS = [
+  { id: 'hr', label: 'HR Dashboard' },
+  { id: 'employee', label: 'Employee Dashboard' },
+  { id: 'manager', label: 'Manager Dashboard' },
+  { id: 'executive', label: 'Executive Dashboard' },
+  { id: 'widgets', label: 'Widgets' },
+  { id: 'kpis', label: 'KPI Cards' },
+  { id: 'actions', label: 'Quick Actions' },
+  { id: 'notifications', label: 'Notifications' },
+  { id: 'calendar', label: 'Calendar' },
+  { id: 'activity', label: 'Activity Feed' },
+] as const;
+
+export type DashboardSectionId = (typeof DASHBOARD_SECTIONS)[number]['id'];
+
+/** Sections that load a role payload through this shell. */
+const PAYLOAD_SECTIONS = new Set<string>(['hr', 'executive']);
+
+const SECTION_SUBTITLE: Record<string, string> = {
+  hr: 'Workforce, attendance, payroll and compliance at a glance',
+  employee: 'What an individual worker sees about themselves',
+  manager: 'Team attendance, approvals and workload',
+  executive: 'Company-wide analytics and cost',
+  widgets: 'Live widget gallery',
+  kpis: 'Headline metrics across the workforce',
+  actions: 'Common HR tasks in one click',
+  notifications: 'Alerts, approvals and announcements',
+  calendar: 'Holidays, leave, birthdays, training and events',
+  activity: 'Who changed what, and when',
+};
 
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
-export function HRDashboard({ onNavigate }: { onNavigate: (page: string) => void }) {
-  const [tab, setTab] = useState('hr');
+interface HRDashboardProps {
+  onNavigate: (page: string) => void;
+  /** Section selected from the sidebar; the in-page tabs stay in sync with it. */
+  section?: string;
+  onSectionChange?: (section: string) => void;
+}
+
+export function HRDashboard({ onNavigate, section, onSectionChange }: HRDashboardProps) {
+  const [localTab, setLocalTab] = useState<string>('hr');
+  const tab = section ?? localTab;
+  const setTab = useCallback(
+    (next: string) => {
+      setLocalTab(next);
+      onSectionChange?.(next);
+    },
+    [onSectionChange],
+  );
+
   const [cache, setCache] = useState<Record<string, DashboardPayload>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -196,9 +250,11 @@ export function HRDashboard({ onNavigate }: { onNavigate: (page: string) => void
   // effect below would re-run every time the cache is written to.
   const fetched = useRef<Set<string>>(new Set());
 
+  const usesPayload = PAYLOAD_SECTIONS.has(tab);
   const payload = cache[tab];
 
   const load = useCallback(async (key: string, force = false) => {
+    if (!PAYLOAD_SECTIONS.has(key)) return;
     if (!force && fetched.current.has(key)) return;
     fetched.current.add(key);
     setLoading(true);
@@ -223,19 +279,48 @@ export function HRDashboard({ onNavigate }: { onNavigate: (page: string) => void
 
   const header = (
     <PageHeader
-      title="HR Dashboard"
-      subtitle="Workforce, attendance, payroll and compliance at a glance"
+      title="Dashboard"
+      subtitle={SECTION_SUBTITLE[tab] ?? 'Workforce overview'}
       actions={
-        <button
-          onClick={() => void load(tab, true)}
-          disabled={loading}
-          className={`${BTN_SECONDARY} flex items-center gap-2`}
-        >
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
-        </button>
+        usesPayload ? (
+          <button
+            onClick={() => void load(tab, true)}
+            disabled={loading}
+            className={`${BTN_SECONDARY} flex items-center gap-2`}
+          >
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
+          </button>
+        ) : undefined
       }
     />
   );
+
+  // Sections that fetch their own data render immediately; only the two
+  // payload-backed role dashboards gate on this shell's loading state.
+  if (!usesPayload) {
+    return (
+      <div className="space-y-5">
+        {header}
+        <TabBar tabs={DASHBOARD_SECTIONS as unknown as { id: string; label: string }[]} active={tab} onChange={setTab} />
+        <motion.div
+          key={tab}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+          className="space-y-4"
+        >
+          {tab === 'employee' && <EmployeeSection onNavigate={onNavigate} />}
+          {tab === 'manager' && <ManagerSection onNavigate={onNavigate} />}
+          {tab === 'widgets' && <WidgetsSection onNavigate={onNavigate} />}
+          {tab === 'kpis' && <KpiCardsSection onNavigate={onNavigate} />}
+          {tab === 'actions' && <QuickActionsSection onNavigate={onNavigate} />}
+          {tab === 'notifications' && <NotificationsSection onNavigate={onNavigate} />}
+          {tab === 'calendar' && <CalendarSection onNavigate={onNavigate} />}
+          {tab === 'activity' && <ActivitySection onNavigate={onNavigate} />}
+        </motion.div>
+      </div>
+    );
+  }
 
   if (!payload && loading) {
     return (
@@ -262,7 +347,7 @@ export function HRDashboard({ onNavigate }: { onNavigate: (page: string) => void
     <div className="space-y-5">
       {header}
 
-      <TabBar tabs={TABS} active={tab} onChange={setTab} />
+      <TabBar tabs={DASHBOARD_SECTIONS as unknown as { id: string; label: string }[]} active={tab} onChange={setTab} />
 
       {error && <ErrorBlock message={error} />}
 
@@ -594,7 +679,151 @@ function HrWidgets({ widgets, onNavigate }: { widgets: AnyRec; onNavigate: (page
           </div>
         )}
       </WidgetCard>
+
+      <OnboardingCard widgets={widgets} onNavigate={onNavigate} />
+      <OffboardingCard widgets={widgets} onNavigate={onNavigate} />
+      <TrainingCard widgets={widgets} />
+
+      <WidgetCard title="HR reports" subtitle="Export and drill-downs">
+        <div className="grid grid-cols-1 gap-2">
+          {[
+            { label: 'Attendance register', page: 'attendance' },
+            { label: 'Leave and advances', page: 'hr' },
+            { label: 'Payroll and compliance', page: 'payroll' },
+            { label: 'Recruitment pipeline', page: 'recruitment' },
+          ].map((r) => (
+            <button
+              key={r.page}
+              onClick={() => onNavigate(r.page)}
+              className="flex items-center justify-between px-3 py-2 rounded-md border border-border-default text-text-secondary text-xs hover:bg-bg-hover hover:text-text-primary transition-colors"
+            >
+              {r.label} <ArrowRight size={13} />
+            </button>
+          ))}
+        </div>
+      </WidgetCard>
+
+      <WidgetCard title="AI insights">
+        <WidgetUnavailable reason="AI features are not enabled for this workspace" />
+      </WidgetCard>
     </div>
+  );
+}
+
+/** Onboarding: candidates selected but not yet converted, plus new joiners missing KYC. */
+function OnboardingCard({ widgets, onNavigate }: { widgets: AnyRec; onNavigate: (page: string) => void }) {
+  const raw = widgets.pendingOnboarding;
+  const reason = unavailableReason(raw);
+  // The API returns either a flat list or {selectedCandidates, newJoinersMissingKyc}.
+  const grouped = asObject(raw);
+  const selected = asArray(Array.isArray(raw) ? raw : grouped.selectedCandidates);
+  const missingKyc = asArray(grouped.newJoinersMissingKyc);
+  const total = selected.length + missingKyc.length;
+
+  return (
+    <WidgetCard
+      title="Onboarding status"
+      subtitle="Waiting to join or complete paperwork"
+      actions={
+        <button onClick={() => onNavigate('recruitment')} className="text-primary text-xs hover:underline">
+          Open
+        </button>
+      }
+    >
+      {reason ? (
+        <WidgetUnavailable reason={reason} />
+      ) : total === 0 ? (
+        <WidgetEmpty message="Nothing pending" />
+      ) : (
+        <div className="space-y-3">
+          {selected.length > 0 && (
+            <div>
+              <p className="text-text-muted text-[10px] uppercase tracking-wider mb-1">Ready to convert</p>
+              {selected.slice(0, 5).map((c: AnyRec, i: number) => (
+                <div key={i} className="flex items-center justify-between py-1">
+                  <span className="text-text-primary text-xs truncate">{c.fullName ?? c.name ?? '—'}</span>
+                  <Chip label="Selected" tone="warning" />
+                </div>
+              ))}
+            </div>
+          )}
+          {missingKyc.length > 0 && (
+            <div>
+              <p className="text-text-muted text-[10px] uppercase tracking-wider mb-1">New joiners missing KYC</p>
+              {missingKyc.slice(0, 5).map((e: AnyRec, i: number) => (
+                <div key={i} className="flex items-center justify-between py-1">
+                  <span className="text-text-primary text-xs truncate">{e.fullName ?? e.name ?? '—'}</span>
+                  <Chip label="KYC" tone="danger" />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </WidgetCard>
+  );
+}
+
+/** Offboarding: recently resigned employees still holding logins, assets or advances. */
+function OffboardingCard({ widgets, onNavigate }: { widgets: AnyRec; onNavigate: (page: string) => void }) {
+  const raw = widgets.pendingOffboarding;
+  const reason = unavailableReason(raw);
+  const rows = asArray(Array.isArray(raw) ? raw : asObject(raw).employees);
+
+  return (
+    <WidgetCard
+      title="Offboarding status"
+      subtitle="Resigned with open items"
+      actions={
+        <button onClick={() => onNavigate('employees')} className="text-primary text-xs hover:underline">
+          Open
+        </button>
+      }
+    >
+      {reason ? (
+        <WidgetUnavailable reason={reason} />
+      ) : rows.length === 0 ? (
+        <WidgetEmpty message="No pending offboarding" />
+      ) : (
+        <div className="space-y-1">
+          {rows.slice(0, 6).map((r: AnyRec, i: number) => (
+            <div key={i} className="flex items-center justify-between py-1">
+              <div className="min-w-0">
+                <p className="text-text-primary text-xs truncate">{r.fullName ?? r.name ?? '—'}</p>
+                <p className="text-text-muted text-[10px] font-mono">{r.empCode ?? ''}</p>
+              </div>
+              {r.reason && <Chip label={String(r.reason)} tone="warning" />}
+            </div>
+          ))}
+        </div>
+      )}
+    </WidgetCard>
+  );
+}
+
+/** Training summary: the API returns either {byStatus,...} or a list of {status,...}. */
+function TrainingCard({ widgets }: { widgets: AnyRec }) {
+  const raw = widgets.trainingStatus;
+  const reason = unavailableReason(raw);
+  const buckets = Array.isArray(raw)
+    ? raw
+        .map((r: AnyRec) => ({
+          label: String(r.status ?? r.bucket ?? ''),
+          count: num(r.trainings ?? r.count ?? 0),
+        }))
+        .filter((b) => b.label !== '')
+    : toBuckets(asObject(raw).byStatus);
+
+  return (
+    <WidgetCard title="Training summary" subtitle="Programmes by status">
+      {reason ? (
+        <WidgetUnavailable reason={reason} />
+      ) : buckets.length === 0 ? (
+        <WidgetEmpty message="No training programmes recorded" />
+      ) : (
+        <BreakdownList title="" buckets={buckets} />
+      )}
+    </WidgetCard>
   );
 }
 
@@ -816,6 +1045,113 @@ function ExecutiveWidgets({ widgets }: { widgets: AnyRec }) {
           </TableShell>
         )}
       </WidgetCard>
+
+      <WidgetCard title="Budget analytics" subtitle="Payroll cost against period">
+        {payrollCost.length === 0 ? (
+          <WidgetUnavailable reason="No budget is configured — showing payroll cost only once periods are calculated" />
+        ) : (
+          <div className="space-y-2">
+            {payrollCost.slice(-4).map((p: AnyRec, i: number) => (
+              <div key={i} className="flex items-center justify-between">
+                <span className="text-text-secondary text-xs truncate">{String(p.label ?? '—')}</span>
+                <span className="text-text-primary text-xs font-mono">{inr(num(p.net))}</span>
+              </div>
+            ))}
+            <p className="text-text-muted text-[10px] pt-1 border-t border-border-light">
+              Budget targets are not configured, so variance is not shown.
+            </p>
+          </div>
+        )}
+      </WidgetCard>
+
+      <WidgetCard title="Executive alerts" subtitle="Items needing attention">
+        <ExecutiveAlerts widgets={widgets} />
+      </WidgetCard>
+
+      <WidgetCard title="Strategic reports">
+        <div className="space-y-2">
+          {[
+            'Payroll cost by period',
+            'Headcount and attrition',
+            'Department performance',
+            'Hiring funnel',
+          ].map((label) => (
+            <div
+              key={label}
+              className="flex items-center justify-between px-3 py-2 rounded-md border border-border-default text-text-secondary text-xs"
+            >
+              {label}
+              <Chip label="On this page" tone="default" />
+            </div>
+          ))}
+        </div>
+      </WidgetCard>
+
+      <WidgetCard title="AI executive insights">
+        <WidgetUnavailable reason="AI features are not enabled for this workspace" />
+      </WidgetCard>
+    </div>
+  );
+}
+
+/**
+ * Derives executive alerts from figures already on the payload rather than
+ * inventing an alert feed the backend does not have.
+ */
+function ExecutiveAlerts({ widgets }: { widgets: AnyRec }) {
+  const overview = asObject(widgets.companyOverview);
+  const payrollCost = asArray(widgets.payrollCost);
+  const planning = asObject(widgets.workforcePlanning);
+
+  const alerts: { label: string; tone: 'warning' | 'danger' | 'info'; detail: string }[] = [];
+
+  const openPeriods = num(overview.openPeriods);
+  if (openPeriods > 0) {
+    alerts.push({
+      label: 'Payroll period open',
+      tone: 'warning',
+      detail: `${openPeriods} period(s) still open and unpaid`,
+    });
+  }
+
+  const openPositions = num(planning.openPositions);
+  if (openPositions > 0) {
+    alerts.push({
+      label: 'Open positions',
+      tone: 'info',
+      detail: `${openPositions} role(s) currently being hired for`,
+    });
+  }
+
+  const latest = payrollCost[payrollCost.length - 1] as AnyRec | undefined;
+  const previous = payrollCost[payrollCost.length - 2] as AnyRec | undefined;
+  if (latest && previous && num(previous.net) > 0) {
+    const changePct = ((num(latest.net) - num(previous.net)) / num(previous.net)) * 100;
+    if (Math.abs(changePct) >= 10) {
+      alerts.push({
+        label: 'Payroll cost movement',
+        tone: changePct > 0 ? 'warning' : 'info',
+        detail: `Net pay ${changePct > 0 ? 'up' : 'down'} ${Math.abs(changePct).toFixed(1)}% vs the previous period`,
+      });
+    }
+  }
+
+  if (alerts.length === 0) return <WidgetEmpty message="Nothing needs attention" />;
+
+  return (
+    <div className="space-y-2">
+      {alerts.map((a, i) => (
+        <div key={i} className="flex items-start gap-2">
+          <ShieldAlert size={14} className="text-warning mt-0.5 flex-shrink-0" />
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-text-primary text-xs font-medium">{a.label}</span>
+              <Chip label={a.tone === 'danger' ? 'High' : a.tone === 'warning' ? 'Review' : 'Info'} tone={a.tone} />
+            </div>
+            <p className="text-text-muted text-[10px]">{a.detail}</p>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

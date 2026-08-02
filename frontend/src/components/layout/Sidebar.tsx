@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   LayoutDashboard, Layers, BookOpen, Users, DollarSign, Shield, Database,
-  ChevronRight, Bell, RefreshCw, LogOut,
+  ChevronRight, ChevronDown, Bell, RefreshCw, LogOut,
   CalendarCheck, Briefcase, UserPlus, PieChart,
 } from 'lucide-react';
 import { Lot, LOT_SLA_DAYS, LEAKAGE_FLAG_THRESHOLD_PCT } from '../../data/mockData';
@@ -65,6 +65,8 @@ interface SidebarProps {
   setActivePage: (page: string) => void;
   floorBadge: string | null;
   payrollBadge: string | null;
+  dashboardSection?: string;
+  setDashboardSection?: (section: string) => void;
 }
 
 interface NavItem {
@@ -72,9 +74,32 @@ interface NavItem {
   label: string;
   icon: typeof LayoutDashboard;
   badge: string | null;
+  /** Sub-navigation, rendered when the parent item is expanded. */
+  children?: { id: string; label: string }[];
 }
 
-export function Sidebar({ activePage, setActivePage, floorBadge, payrollBadge }: SidebarProps) {
+/** Sections of the HRMS dashboard, mirrored from HRDashboard.DASHBOARD_SECTIONS. */
+const DASHBOARD_SECTION_ITEMS = [
+  { id: 'hr', label: 'HR Dashboard' },
+  { id: 'employee', label: 'Employee Dashboard' },
+  { id: 'manager', label: 'Manager Dashboard' },
+  { id: 'executive', label: 'Executive Dashboard' },
+  { id: 'widgets', label: 'Widgets' },
+  { id: 'kpis', label: 'KPI Cards' },
+  { id: 'actions', label: 'Quick Actions' },
+  { id: 'notifications', label: 'Notifications' },
+  { id: 'calendar', label: 'Calendar' },
+  { id: 'activity', label: 'Activity Feed' },
+];
+
+export function Sidebar({
+  activePage,
+  setActivePage,
+  floorBadge,
+  payrollBadge,
+  dashboardSection,
+  setDashboardSection,
+}: SidebarProps) {
   const { lots, refresh } = useApp();
   const { logout, user } = useAuth();
   const exceptions = computeExceptions(lots);
@@ -84,6 +109,9 @@ export function Sidebar({ activePage, setActivePage, floorBadge, payrollBadge }:
   // the badges off rather than breaking navigation.
   const [pendingLeave, setPendingLeave] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  // Which parent nav items have their sub-navigation open. Defaults to open
+  // for whichever item is currently active.
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -118,7 +146,7 @@ export function Sidebar({ activePage, setActivePage, floorBadge, payrollBadge }:
     {
       title: 'HRMS',
       items: [
-        { id: 'hrdashboard', label: 'HR Dashboard', icon: PieChart, badge: null },
+        { id: 'hrdashboard', label: 'Dashboard', icon: PieChart, badge: null, children: DASHBOARD_SECTION_ITEMS },
         { id: 'attendance', label: 'Attendance', icon: CalendarCheck, badge: null },
         { id: 'hr', label: 'Leave & Advances', icon: Briefcase, badge: pendingLeave > 0 ? String(pendingLeave) : null },
         { id: 'recruitment', label: 'Recruitment', icon: UserPlus, badge: null },
@@ -165,10 +193,17 @@ export function Sidebar({ activePage, setActivePage, floorBadge, payrollBadge }:
               {group.items.map((item) => {
                 const Icon = item.icon;
                 const isActive = activePage === item.id;
+                const hasChildren = !!item.children?.length;
+                const isExpanded = hasChildren && (expanded[item.id] ?? isActive);
                 return (
                   <li key={item.id}>
                     <button
-                      onClick={() => setActivePage(item.id)}
+                      onClick={() => {
+                        setActivePage(item.id);
+                        if (hasChildren) {
+                          setExpanded((prev) => ({ ...prev, [item.id]: !(prev[item.id] ?? isActive) }));
+                        }
+                      }}
                       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-150 group ${
                         isActive
                           ? 'bg-bg-selected text-primary'
@@ -182,8 +217,40 @@ export function Sidebar({ activePage, setActivePage, floorBadge, payrollBadge }:
                           {item.badge}
                         </span>
                       )}
-                      {isActive && <ChevronRight size={14} className="text-text-muted" />}
+                      {hasChildren ? (
+                        <ChevronDown
+                          size={14}
+                          className={`text-text-muted transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                        />
+                      ) : (
+                        isActive && <ChevronRight size={14} className="text-text-muted" />
+                      )}
                     </button>
+
+                    {hasChildren && isExpanded && (
+                      <ul className="mt-0.5 mb-1 ml-[26px] pl-3 border-l border-border-default space-y-0.5">
+                        {item.children!.map((child) => {
+                          const isChildActive = isActive && dashboardSection === child.id;
+                          return (
+                            <li key={child.id}>
+                              <button
+                                onClick={() => {
+                                  setActivePage(item.id);
+                                  setDashboardSection?.(child.id);
+                                }}
+                                className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                                  isChildActive
+                                    ? 'bg-bg-selected text-primary font-medium'
+                                    : 'text-text-muted hover:text-text-primary hover:bg-bg-hover'
+                                }`}
+                              >
+                                {child.label}
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
                   </li>
                 );
               })}
@@ -219,7 +286,10 @@ export function Sidebar({ activePage, setActivePage, floorBadge, payrollBadge }:
       {/* Bottom actions */}
       <div className="px-3 pb-4 border-t border-border-default pt-3 space-y-0.5">
         <button
-          onClick={() => setActivePage('hrdashboard')}
+          onClick={() => {
+            setActivePage('hrdashboard');
+            setDashboardSection?.('notifications');
+          }}
           className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-text-muted hover:text-text-primary hover:bg-bg-hover transition-colors"
         >
           <Bell size={16} />

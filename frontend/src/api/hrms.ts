@@ -182,6 +182,35 @@ export const hrDashboardApi = {
   calendar: (from: string, to: string) => api.get<any[]>(`/hr-dashboard/calendar${qs({ from, to })}`),
 };
 
+// ---------------------------------------------------------------------------
+// Engagement: tasks, tickets, expenses, assets, announcements, trainings
+// ---------------------------------------------------------------------------
+export const engagementApi = {
+  tasks: (filters: { employeeId?: number; status?: string; limit?: number } = {}) =>
+    api.get<any[]>(`/engagement/tasks${qs(filters)}`),
+  createTask: (body: Record<string, unknown>) => api.post<any>('/engagement/tasks', body),
+  setTaskStatus: (id: number, status: string) =>
+    api.put<any>(`/engagement/tasks/${id}/status`, { status }),
+
+  tickets: (filters: { employeeId?: number; status?: string } = {}) =>
+    api.get<any[]>(`/engagement/tickets${qs(filters)}`),
+  createTicket: (body: Record<string, unknown>) => api.post<any>('/engagement/tickets', body),
+  setTicketStatus: (id: number, status: string, resolution?: string) =>
+    api.put<any>(`/engagement/tickets/${id}/status`, { status, resolution }),
+
+  expenses: (filters: { employeeId?: number; status?: string } = {}) =>
+    api.get<any[]>(`/engagement/expenses${qs(filters)}`),
+  createExpense: (body: Record<string, unknown>) => api.post<any>('/engagement/expenses', body),
+  decideExpense: (id: number, status: string, note?: string) =>
+    api.put<any>(`/engagement/expenses/${id}/decide`, { status, note }),
+
+  assets: (filters: { status?: string } = {}) => api.get<any[]>(`/engagement/assets${qs(filters)}`),
+  announcements: (filters: { activeOnly?: boolean } = {}) =>
+    api.get<any[]>(`/engagement/announcements${qs(filters)}`),
+  events: (from: string, to: string) => api.get<any[]>(`/engagement/events${qs({ from, to })}`),
+  trainings: (filters: { status?: string } = {}) => api.get<any[]>(`/engagement/trainings${qs(filters)}`),
+};
+
 export const notificationApi = {
   list: (filters: { unreadOnly?: boolean; archived?: boolean; category?: string; limit?: number } = {}) =>
     api.get<AppNotification[]>(`/notifications${qs(filters)}`),

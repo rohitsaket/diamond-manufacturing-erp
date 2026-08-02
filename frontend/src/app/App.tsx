@@ -64,6 +64,9 @@ function ErrorBanner({ message, onRetry }: { message: string; onRetry: () => voi
 function AppInner() {
   const { isAuthenticated, user } = useAuth();
   const [activePage, setActivePage] = useState('dashboard');
+  // Which section of the HRMS dashboard is showing. Held here so the sidebar
+  // sub-navigation and the in-page tabs stay in sync.
+  const [dashboardSection, setDashboardSection] = useState('hr');
   const { lots, salaryLines, salaryPeriods, loaded, error, refresh } = useApp();
 
   if (!isAuthenticated) {
@@ -100,7 +103,13 @@ function AppInner() {
     payroll: <Payroll />,
     rates: <RateCard />,
     masterdata: <MasterData />,
-    hrdashboard: <HRDashboard onNavigate={setActivePage} />,
+    hrdashboard: (
+      <HRDashboard
+        onNavigate={setActivePage}
+        section={dashboardSection}
+        onSectionChange={setDashboardSection}
+      />
+    ),
     attendance: <Attendance />,
     hr: <HR />,
     recruitment: <Recruitment />,
@@ -113,6 +122,8 @@ function AppInner() {
         setActivePage={setActivePage}
         floorBadge={floorExceptions > 0 ? String(floorExceptions) : null}
         payrollBadge={pendingPayrollCount > 0 ? String(pendingPayrollCount) : null}
+        dashboardSection={dashboardSection}
+        setDashboardSection={setDashboardSection}
       />
 
       <main className="flex-1 min-h-screen flex flex-col">
