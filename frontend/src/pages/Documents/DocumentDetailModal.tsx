@@ -163,7 +163,11 @@ export function DocumentDetailModal({
         return null;
       }),
       documentApi.versions(documentId).catch(() => [] as DocumentRecord[]),
-      documentApi.audit(documentId).catch(() => [] as DocumentAuditEntry[]),
+      // The audit endpoint is paginated and returns { rows, total }.
+      documentApi
+        .audit(documentId, { limit: 200 })
+        .then((res) => res?.rows ?? [])
+        .catch(() => [] as DocumentAuditEntry[]),
       documentApi.comments(documentId).catch(() => [] as DocumentComment[]),
       documentApi.shares(documentId).catch(() => [] as DocumentShare[]),
     ]);

@@ -98,7 +98,9 @@ export const documentApi = {
     api.get<DocumentRecord[]>(`/documents/employee/${employeeId}${qs(params)}`),
   get: (id: number) => api.get<DocumentRecord>(`/documents/${id}`),
   versions: (id: number) => api.get<DocumentRecord[]>(`/documents/${id}/versions`),
-  audit: (id: number) => api.get<DocumentAuditEntry[]>(`/documents/${id}/audit`),
+  /** Paginated: the endpoint returns `{rows, total}`, not a bare array. */
+  audit: (id: number, params: { limit?: number; offset?: number } = {}) =>
+    api.get<{ rows: DocumentAuditEntry[]; total: number }>(`/documents/${id}/audit${qs(params)}`),
   comments: (id: number) => api.get<DocumentComment[]>(`/documents/${id}/comments`),
   addComment: (id: number, body: string, isInternal = false) =>
     api.post<DocumentComment>(`/documents/${id}/comments`, { body, isInternal }),
