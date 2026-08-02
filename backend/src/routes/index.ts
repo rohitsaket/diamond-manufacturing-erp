@@ -16,6 +16,7 @@ import notificationRoutes from './notification.routes';
 import essRoutes from './ess.routes';
 import profileRoutes from './profile.routes';
 import documentRoutes from './document.routes';
+import organizationRoutes from './organization.routes';
 
 const router = Router();
 
@@ -27,6 +28,7 @@ router.use('/ledger', ledgerRoutes);
 router.use('/employees', employeeRoutes);
 router.use('/profile', profileRoutes);
 router.use('/documents', documentRoutes);
+router.use('/organization', organizationRoutes);
 router.use('/payroll', payrollRoutes);
 router.use('/rate-card', rateCardRoutes);
 

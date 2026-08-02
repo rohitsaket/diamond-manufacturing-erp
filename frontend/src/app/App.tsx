@@ -16,6 +16,7 @@ import { HR } from '../pages/HR/HR';
 import { Recruitment } from '../pages/Recruitment/Recruitment';
 import { EmployeeProfile } from '../pages/EmployeeProfile/EmployeeProfile';
 import { Documents } from '../pages/Documents/Documents';
+import { Organization } from '../pages/Organization/Organization';
 import { HRDashboard } from '../pages/HRDashboard/HRDashboard';
 import { LoginPage } from '../pages/Login/Login';
 import { LOT_SLA_DAYS } from '../data/mockData';
@@ -117,6 +118,7 @@ function AppInner() {
     recruitment: <Recruitment />,
     hrprofile: <EmployeeProfile onNavigate={setActivePage} />,
     documents: <Documents onNavigate={setActivePage} />,
+    organization: <Organization onNavigate={setActivePage} />,
   };
 
   return (

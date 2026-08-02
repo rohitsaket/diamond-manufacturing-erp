@@ -55,6 +55,14 @@ async function run(): Promise<void> {
       'advance_recoveries', 'advances',
       'leave_requests', 'leave_balances', 'leave_types',
       'attendance_records', 'holidays', 'shifts',
+      // Organization structure
+      'org_audit_logs', 'org_change_requests', 'org_policies',
+      'reporting_relationships', 'team_members', 'teams',
+      'positions', 'career_paths', 'job_roles', 'job_levels', 'job_grades',
+      'job_functions', 'job_families',
+      'cost_centers', 'cost_center_groups',
+      'department_kpis', 'departments', 'divisions', 'business_units',
+      'locations', 'branches', 'regions', 'legal_entities', 'companies',
       // Document management
       'document_audit_logs', 'document_shares', 'document_comments',
       'document_requirements', 'employee_documents', 'document_types',
