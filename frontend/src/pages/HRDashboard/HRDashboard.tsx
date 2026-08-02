@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { RefreshCw, ArrowRight, ShieldAlert } from 'lucide-react';
 import {
@@ -16,7 +16,7 @@ import {
   Legend,
 } from 'recharts';
 import { hrDashboardApi } from '../../api/hrms';
-import type { DashboardPayload } from '../../types/hrms';
+import type { DashboardPayload, KpiCard } from '../../types/hrms';
 import {
   PageHeader,
   Chip,
@@ -83,6 +83,16 @@ function toBuckets(value: unknown): Bucket[] {
   if (obj.available === false) return [];
   return Object.entries(obj).map(([label, count]) => ({ label, count: num(count) }));
 }
+
+/** Recharts hands tooltip formatters a possibly-undefined ValueType. */
+type TooltipValue = number | string | Array<number | string> | undefined;
+
+const pctFormatter =
+  (name: string) =>
+  (value: TooltipValue): [string, string] =>
+    [`${Number(value ?? 0)}%`, name];
+
+const moneyFormatter = (value: TooltipValue): string => inr(Number(value ?? 0));
 
 const AXIS = { fontSize: 11 } as const;
 const CHART_MARGIN = { top: 8, right: 8, bottom: 0, left: -14 } as const;
@@ -182,31 +192,33 @@ export function HRDashboard({ onNavigate }: { onNavigate: (page: string) => void
   const [cache, setCache] = useState<Record<string, DashboardPayload>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Tracked in a ref so `load` stays referentially stable — otherwise the
+  // effect below would re-run every time the cache is written to.
+  const fetched = useRef<Set<string>>(new Set());
 
   const payload = cache[tab];
 
-  const load = useCallback(
-    async (key: string, force = false) => {
-      if (!force && cache[key]) return;
-      setLoading(true);
-      setError(null);
-      try {
-        const data = key === 'executive' ? await hrDashboardApi.executive() : await hrDashboardApi.hr();
-        setCache((prev) => ({ ...prev, [key]: data }));
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load the dashboard');
-      } finally {
-        setLoading(false);
-      }
-    },
-    [cache],
-  );
+  const load = useCallback(async (key: string, force = false) => {
+    if (!force && fetched.current.has(key)) return;
+    fetched.current.add(key);
+    setLoading(true);
+    setError(null);
+    try {
+      const data = key === 'executive' ? await hrDashboardApi.executive() : await hrDashboardApi.hr();
+      setCache((prev) => ({ ...prev, [key]: data }));
+    } catch (err) {
+      fetched.current.delete(key);
+      setError(err instanceof Error ? err.message : 'Failed to load the dashboard');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     void load(tab);
   }, [tab, load]);
 
-  const kpis = useMemo(() => asArray(payload?.kpis), [payload]);
+  const kpis = useMemo(() => asArray<KpiCard>(payload?.kpis), [payload]);
   const widgets = useMemo(() => asObject(payload?.widgets), [payload]);
 
   const header = (
@@ -365,7 +377,7 @@ function HrWidgets({ widgets, onNavigate }: { widgets: AnyRec; onNavigate: (page
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
               <XAxis dataKey="date" tick={AXIS} stroke="var(--color-text-muted)" tickFormatter={shortDate} minTickGap={18} />
               <YAxis tick={AXIS} stroke="var(--color-text-muted)" domain={[0, 100]} />
-              <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: number | string) => [`${v}%`, 'Present']} />
+              <Tooltip contentStyle={TOOLTIP_STYLE} formatter={pctFormatter('Present')} />
               <Area
                 type="monotone"
                 dataKey="presentPct"
@@ -639,7 +651,7 @@ function ExecutiveWidgets({ widgets }: { widgets: AnyRec }) {
               <Tooltip
                 contentStyle={TOOLTIP_STYLE}
                 cursor={{ fill: 'var(--color-bg-hover)' }}
-                formatter={(v: number | string) => inr(Number(v))}
+                formatter={moneyFormatter}
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               <Bar dataKey="gross" name="Gross" fill="var(--color-primary)" radius={[3, 3, 0, 0]} />
@@ -710,7 +722,7 @@ function ExecutiveWidgets({ widgets }: { widgets: AnyRec }) {
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
               <XAxis dataKey="month" tick={AXIS} stroke="var(--color-text-muted)" tickFormatter={shortMonth} />
               <YAxis tick={AXIS} stroke="var(--color-text-muted)" domain={[0, 100]} />
-              <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: number | string) => [`${v}%`, 'Attendance']} />
+              <Tooltip contentStyle={TOOLTIP_STYLE} formatter={pctFormatter('Attendance')} />
               <Area
                 type="monotone"
                 dataKey="attendancePct"
