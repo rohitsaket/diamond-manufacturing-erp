@@ -85,7 +85,7 @@ function toBuckets(value: unknown): Bucket[] {
 }
 
 /** Recharts hands tooltip formatters a possibly-undefined ValueType. */
-type TooltipValue = number | string | Array<number | string> | undefined;
+type TooltipValue = number | string | ReadonlyArray<number | string> | undefined;
 
 const pctFormatter =
   (name: string) =>
