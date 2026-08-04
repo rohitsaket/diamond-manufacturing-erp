@@ -18,6 +18,7 @@ import { EmployeeProfile } from '../pages/EmployeeProfile/EmployeeProfile';
 import { Documents } from '../pages/Documents/Documents';
 import { Organization } from '../pages/Organization/Organization';
 import { HRDashboard } from '../pages/HRDashboard/HRDashboard';
+import { PayrollEnterprise } from '../pages/PayrollEnterprise/PayrollEnterprise';
 import { LoginPage } from '../pages/Login/Login';
 import { LOT_SLA_DAYS } from '../data/mockData';
 
@@ -70,6 +71,9 @@ function AppInner() {
   // Which section of the HRMS dashboard is showing. Held here so the sidebar
   // sub-navigation and the in-page tabs stay in sync.
   const [dashboardSection, setDashboardSection] = useState('hr');
+  // Active section of the enterprise payroll workspace, kept in sync with the
+  // sidebar sub-navigation.
+  const [payrollSection, setPayrollSection] = useState('overview');
   const { lots, salaryLines, salaryPeriods, loaded, error, refresh } = useApp();
 
   if (!isAuthenticated) {
@@ -106,6 +110,13 @@ function AppInner() {
     payroll: <Payroll />,
     rates: <RateCard />,
     masterdata: <MasterData />,
+    payrollenterprise: (
+      <PayrollEnterprise
+        onNavigate={setActivePage}
+        section={payrollSection}
+        onSectionChange={setPayrollSection}
+      />
+    ),
     hrdashboard: (
       <HRDashboard
         onNavigate={setActivePage}
@@ -129,6 +140,8 @@ function AppInner() {
         floorBadge={floorExceptions > 0 ? String(floorExceptions) : null}
         payrollBadge={pendingPayrollCount > 0 ? String(pendingPayrollCount) : null}
         dashboardSection={dashboardSection}
+        payrollSection={payrollSection}
+        setPayrollSection={setPayrollSection}
         setDashboardSection={setDashboardSection}
       />
 

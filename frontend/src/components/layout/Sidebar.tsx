@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   LayoutDashboard, Layers, BookOpen, Users, DollarSign, Shield, Database,
   ChevronRight, ChevronDown, Bell, RefreshCw, LogOut,
-  CalendarCheck, Briefcase, UserPlus, PieChart, IdCard, FolderLock, Network,
+  CalendarCheck, Briefcase, UserPlus, PieChart, IdCard, FolderLock, Network, Banknote,
 } from 'lucide-react';
 import { Lot, LOT_SLA_DAYS, LEAKAGE_FLAG_THRESHOLD_PCT } from '../../data/mockData';
 import { useApp } from '../../contexts/AppContext';
@@ -67,6 +67,8 @@ interface SidebarProps {
   payrollBadge: string | null;
   dashboardSection?: string;
   setDashboardSection?: (section: string) => void;
+  payrollSection?: string;
+  setPayrollSection?: (section: string) => void;
 }
 
 interface NavItem {
@@ -92,12 +94,32 @@ const DASHBOARD_SECTION_ITEMS = [
   { id: 'activity', label: 'Activity Feed' },
 ];
 
+/** Sections of the enterprise payroll workspace. */
+const PAYROLL_SECTION_ITEMS = [
+  { id: 'overview', label: 'Payroll Dashboard' },
+  { id: 'runs', label: 'Payroll Runs' },
+  { id: 'structures', label: 'Salary Structures' },
+  { id: 'compensation', label: 'Compensation' },
+  { id: 'awards', label: 'Bonus & Incentives' },
+  { id: 'loans', label: 'Loans & Advances' },
+  { id: 'reimbursements', label: 'Reimbursements' },
+  { id: 'tax', label: 'Tax & Compliance' },
+  { id: 'bank', label: 'Bank Transfers' },
+  { id: 'payslips', label: 'Payslips' },
+  { id: 'analytics', label: 'Analytics' },
+  { id: 'reports', label: 'Reports' },
+  { id: 'approvals', label: 'Approvals' },
+  { id: 'audit', label: 'Audit Log' },
+];
+
 export function Sidebar({
   activePage,
   setActivePage,
   floorBadge,
   payrollBadge,
   dashboardSection,
+  payrollSection,
+  setPayrollSection,
   setDashboardSection,
 }: SidebarProps) {
   const { lots, refresh } = useApp();
@@ -153,6 +175,7 @@ export function Sidebar({
         { id: 'attendance', label: 'Attendance', icon: CalendarCheck, badge: null },
         { id: 'hr', label: 'Leave & Advances', icon: Briefcase, badge: pendingLeave > 0 ? String(pendingLeave) : null },
         { id: 'recruitment', label: 'Recruitment', icon: UserPlus, badge: null },
+        { id: 'payrollenterprise', label: 'Payroll', icon: Banknote, badge: null, children: PAYROLL_SECTION_ITEMS },
       ],
     },
   ];
@@ -168,8 +191,8 @@ export function Sidebar({
             </svg>
           </div>
           <div>
-            <h1 className="text-text-primary font-semibold text-sm">Harene</h1>
-            <p className="text-text-muted text-[10px] uppercase tracking-wider font-medium">Diamond ERP</p>
+            <h1 className="text-text-primary font-semibold text-sm">DiamondMatrix</h1>
+            <p className="text-text-muted text-[10px] uppercase tracking-wider font-medium">Enterprise ERP</p>
           </div>
         </div>
       </div>
@@ -233,13 +256,17 @@ export function Sidebar({
                     {hasChildren && isExpanded && (
                       <ul className="mt-0.5 mb-1 ml-[26px] pl-3 border-l border-border-default space-y-0.5">
                         {item.children!.map((child) => {
-                          const isChildActive = isActive && dashboardSection === child.id;
+                          // Each expandable parent tracks its own active section.
+                          const isPayroll = item.id === 'payrollenterprise';
+                          const currentSection = isPayroll ? payrollSection : dashboardSection;
+                          const isChildActive = isActive && currentSection === child.id;
                           return (
                             <li key={child.id}>
                               <button
                                 onClick={() => {
                                   setActivePage(item.id);
-                                  setDashboardSection?.(child.id);
+                                  if (isPayroll) setPayrollSection?.(child.id);
+                                  else setDashboardSection?.(child.id);
                                 }}
                                 className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs transition-colors ${
                                   isChildActive
