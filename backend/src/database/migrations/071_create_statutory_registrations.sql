@@ -1,0 +1,122 @@
+-- Establishment-level statutory registrations (PF, ESI, PT, LWF, TAN).
+-- One row per registration per legal entity, so a second company or state can be
+-- added without touching the schema.
+CREATE TABLE IF NOT EXISTS statutory_registrations (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  reg_type ENUM('PF', 'ESI', 'PT', 'LWF', 'TAN', 'GRATUITY', 'SHOPS_ESTABLISHMENT', 'OTHER') NOT NULL,
+  registration_no VARCHAR(60) NOT NULL,
+  legal_entity VARCHAR(160) NULL,
+  company VARCHAR(160) NULL,
+  branch VARCHAR(120) NULL,
+  country CHAR(2) NOT NULL DEFAULT 'IN',
+  state_code VARCHAR(10) NULL,
+  authority_name VARCHAR(200) NULL,
+  registered_on DATE NULL,
+  valid_until DATE NULL,
+-- Portal credentials are NOT stored here. Filing is prepared offline and
+-- uploaded manually, so only the public identifiers live in the database.
+  portal_username VARCHAR(120) NULL,
+  contact_person VARCHAR(160) NULL,
+  contact_phone VARCHAR(20) NULL,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  notes VARCHAR(500) NULL,
+  created_by INT UNSIGNED NULL,
+  updated_by INT UNSIGNED NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+  UNIQUE KEY uk_registration (reg_type, registration_no),
+  INDEX idx_registrations_type (reg_type, is_active),
+  INDEX idx_registrations_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Per-employee statutory enrolment: UAN, ESI IP number, PAN verification state.
+CREATE TABLE IF NOT EXISTS employee_statutory (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT UNSIGNED NOT NULL UNIQUE,
+  uan VARCHAR(12) NULL,
+  pf_member_id VARCHAR(30) NULL,
+  pf_joined_on DATE NULL,
+  pf_exit_on DATE NULL,
+  pf_status ENUM('NOT_ENROLLED', 'ACTIVE', 'EXITED', 'EXEMPT') NOT NULL DEFAULT 'NOT_ENROLLED',
+  vpf_percent DECIMAL(5, 2) NOT NULL DEFAULT 0,
+  vpf_amount DECIMAL(12, 2) NULL,
+  eps_applicable BOOLEAN NOT NULL DEFAULT true,
+  esi_ip_number VARCHAR(20) NULL,
+  esi_joined_on DATE NULL,
+  esi_exit_on DATE NULL,
+  esi_status ENUM('NOT_ENROLLED', 'ACTIVE', 'EXITED', 'OUT_OF_COVERAGE') NOT NULL DEFAULT 'NOT_ENROLLED',
+  esi_dispensary VARCHAR(160) NULL,
+  pan VARCHAR(10) NULL,
+  pan_status ENUM('NOT_PROVIDED', 'PROVIDED', 'VERIFIED', 'INVALID') NOT NULL DEFAULT 'NOT_PROVIDED',
+  pan_verified_on DATE NULL,
+  pt_state_code VARCHAR(10) NULL,
+  lwf_state_code VARCHAR(10) NULL,
+  gratuity_eligible BOOLEAN NOT NULL DEFAULT true,
+  created_by INT UNSIGNED NULL,
+  updated_by INT UNSIGNED NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_emp_statutory_uan (uan),
+  INDEX idx_emp_statutory_pf (pf_status),
+  INDEX idx_emp_statutory_esi (esi_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Nominees for PF, EPS, gratuity and insurance.
+CREATE TABLE IF NOT EXISTS statutory_nominees (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT UNSIGNED NOT NULL,
+  scheme ENUM('PF', 'EPS', 'GRATUITY', 'INSURANCE') NOT NULL,
+  nominee_name VARCHAR(160) NOT NULL,
+  relation VARCHAR(60) NOT NULL,
+  dob DATE NULL,
+  share_pct DECIMAL(5, 2) NOT NULL DEFAULT 100,
+  address VARCHAR(500) NULL,
+  is_minor BOOLEAN NOT NULL DEFAULT false,
+  guardian_name VARCHAR(160) NULL,
+  document_id INT UNSIGNED NULL,
+  created_by INT UNSIGNED NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL,
+  FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+  FOREIGN KEY (document_id) REFERENCES employee_documents(id) ON DELETE SET NULL,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_nominees_employee (employee_id, scheme),
+  INDEX idx_nominees_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- PF transfers and withdrawals raised by an employee.
+CREATE TABLE IF NOT EXISTS pf_claims (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT UNSIGNED NOT NULL,
+  claim_type ENUM('TRANSFER_IN', 'TRANSFER_OUT', 'WITHDRAWAL', 'ADVANCE', 'PENSION_WITHDRAWAL') NOT NULL,
+  claim_no VARCHAR(40) NULL,
+  form_type VARCHAR(20) NULL,
+  amount DECIMAL(14, 2) NULL,
+  previous_uan VARCHAR(12) NULL,
+  previous_member_id VARCHAR(30) NULL,
+  previous_employer VARCHAR(200) NULL,
+  reason VARCHAR(500) NULL,
+  status ENUM('DRAFT', 'SUBMITTED', 'IN_PROGRESS', 'APPROVED', 'REJECTED', 'SETTLED') NOT NULL DEFAULT 'DRAFT',
+  submitted_on DATE NULL,
+  settled_on DATE NULL,
+  document_id INT UNSIGNED NULL,
+  remarks VARCHAR(500) NULL,
+  created_by INT UNSIGNED NULL,
+  updated_by INT UNSIGNED NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL,
+  FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+  FOREIGN KEY (document_id) REFERENCES employee_documents(id) ON DELETE SET NULL,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_pf_claims_employee (employee_id, status),
+  INDEX idx_pf_claims_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

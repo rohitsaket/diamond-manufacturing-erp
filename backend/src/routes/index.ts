@@ -9,6 +9,8 @@ import compensationRoutes from './compensation.routes';
 import payrollLoanRoutes from './payroll-loans.routes';
 import payrollRunRoutes from './payroll-runs.routes';
 import payrollAdminRoutes from './payroll-admin.routes';
+import statutoryRoutes from './statutory.routes';
+import complianceRoutes from './compliance.routes';
 import rateCardRoutes from './rate-card.routes';
 import attendanceRoutes from './attendance.routes';
 import leaveRoutes from './leave.routes';
@@ -40,6 +42,8 @@ router.use('/compensation', compensationRoutes);
 router.use('/payroll-loans', payrollLoanRoutes);
 router.use('/payroll-runs', payrollRunRoutes);
 router.use('/payroll-admin', payrollAdminRoutes);
+router.use('/statutory', statutoryRoutes);
+router.use('/compliance', complianceRoutes);
 router.use('/rate-card', rateCardRoutes);
 
 // HRMS

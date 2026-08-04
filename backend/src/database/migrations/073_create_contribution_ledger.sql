@@ -1,0 +1,88 @@
+-- Per-employee, per-period statutory contribution ledger. salary_lines carries
+-- the summary columns; this table carries the detail every register, challan,
+-- return and reconciliation is built from.
+CREATE TABLE IF NOT EXISTS statutory_contributions (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT UNSIGNED NOT NULL,
+  period_id INT UNSIGNED NOT NULL,
+  salary_line_id INT UNSIGNED NULL,
+  run_id INT UNSIGNED NULL,
+  scheme ENUM('PF', 'EPS', 'EDLI', 'ESI', 'PT', 'LWF', 'TDS', 'VPF') NOT NULL,
+  financial_year VARCHAR(9) NOT NULL,
+  month_key VARCHAR(7) NOT NULL,
+  state_code VARCHAR(10) NULL,
+-- The wage the contribution was computed on, after any statutory ceiling.
+  wage_base DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  uncapped_wage DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  employee_amount DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  employer_amount DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  admin_charges DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  total_amount DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  rate_applied DECIMAL(6, 3) NULL,
+  ncp_days DECIMAL(6, 2) NOT NULL DEFAULT 0,
+  paid_days DECIMAL(6, 2) NOT NULL DEFAULT 0,
+  currency CHAR(3) NOT NULL DEFAULT 'INR',
+  challan_id INT UNSIGNED NULL,
+  filing_id INT UNSIGNED NULL,
+  status ENUM('COMPUTED', 'CHALLAN_GENERATED', 'PAID', 'FILED', 'RECONCILED') NOT NULL DEFAULT 'COMPUTED',
+  remarks VARCHAR(255) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+  FOREIGN KEY (period_id) REFERENCES salary_periods(id) ON DELETE CASCADE,
+  FOREIGN KEY (salary_line_id) REFERENCES salary_lines(id) ON DELETE SET NULL,
+  FOREIGN KEY (run_id) REFERENCES payroll_runs(id) ON DELETE SET NULL,
+  UNIQUE KEY uk_contribution (employee_id, period_id, scheme),
+  INDEX idx_contrib_period_scheme (period_id, scheme),
+  INDEX idx_contrib_fy (financial_year, scheme),
+  INDEX idx_contrib_month (month_key, scheme),
+  INDEX idx_contrib_status (status),
+  INDEX idx_contrib_challan (challan_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Gratuity liability accrued per employee, recomputed periodically.
+CREATE TABLE IF NOT EXISTS gratuity_provisions (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT UNSIGNED NOT NULL,
+  as_of_date DATE NOT NULL,
+  financial_year VARCHAR(9) NOT NULL,
+  years_of_service DECIMAL(6, 2) NOT NULL DEFAULT 0,
+  last_drawn_wage DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  is_eligible BOOLEAN NOT NULL DEFAULT false,
+  provision_amount DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  previous_provision DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  incremental_provision DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  settled_amount DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  settlement_id INT UNSIGNED NULL,
+  computed_at DATETIME NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+  FOREIGN KEY (settlement_id) REFERENCES final_settlements(id) ON DELETE SET NULL,
+  UNIQUE KEY uk_gratuity_provision (employee_id, as_of_date),
+  INDEX idx_gratuity_fy (financial_year)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- PF passbook style running balance, including interest credited.
+CREATE TABLE IF NOT EXISTS pf_account_entries (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT UNSIGNED NOT NULL,
+  financial_year VARCHAR(9) NOT NULL,
+  month_key VARCHAR(7) NULL,
+  entry_type ENUM('CONTRIBUTION', 'INTEREST', 'TRANSFER_IN', 'WITHDRAWAL', 'ADJUSTMENT') NOT NULL,
+  employee_share DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  employer_share DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  pension_share DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  vpf_share DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  interest_rate_pct DECIMAL(6, 3) NULL,
+  closing_balance DECIMAL(16, 2) NOT NULL DEFAULT 0,
+  entry_date DATE NOT NULL,
+  reference VARCHAR(120) NULL,
+  remarks VARCHAR(255) NULL,
+  created_by INT UNSIGNED NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_pf_entries_employee (employee_id, financial_year),
+  INDEX idx_pf_entries_type (entry_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
