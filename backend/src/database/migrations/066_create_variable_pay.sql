@@ -1,0 +1,67 @@
+-- Bonus, incentives and variable pay. One table with a discriminator keeps
+-- approval, payout and reporting uniform across all three.
+CREATE TABLE IF NOT EXISTS pay_awards (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT UNSIGNED NOT NULL,
+  award_class ENUM('BONUS', 'INCENTIVE', 'VARIABLE_PAY') NOT NULL,
+  award_type VARCHAR(60) NOT NULL,
+  component_id INT UNSIGNED NULL,
+  title VARCHAR(200) NOT NULL,
+  amount DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  currency CHAR(3) NOT NULL DEFAULT 'INR',
+-- For target-linked pay: what was targeted and what was achieved.
+  target_value DECIMAL(14, 2) NULL,
+  achieved_value DECIMAL(14, 2) NULL,
+  achievement_pct DECIMAL(7, 2) NULL,
+  period_id INT UNSIGNED NULL,
+  payout_period_id INT UNSIGNED NULL,
+  effective_date DATE NOT NULL,
+  status ENUM('DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED', 'PAID', 'CANCELLED') NOT NULL DEFAULT 'DRAFT',
+  is_taxable BOOLEAN NOT NULL DEFAULT true,
+  reason VARCHAR(500) NULL,
+  approved_by INT UNSIGNED NULL,
+  approved_at DATETIME NULL,
+  paid_at DATETIME NULL,
+  created_by INT UNSIGNED NULL,
+  updated_by INT UNSIGNED NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL,
+  FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+  FOREIGN KEY (component_id) REFERENCES pay_components(id) ON DELETE SET NULL,
+  FOREIGN KEY (period_id) REFERENCES salary_periods(id) ON DELETE SET NULL,
+  FOREIGN KEY (payout_period_id) REFERENCES salary_periods(id) ON DELETE SET NULL,
+  FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_awards_employee (employee_id, status),
+  INDEX idx_awards_class (award_class, status),
+  INDEX idx_awards_payout (payout_period_id),
+  INDEX idx_awards_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Overtime rules, layered on the attendance module's recorded OT hours.
+CREATE TABLE IF NOT EXISTS overtime_rules (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(40) NOT NULL UNIQUE,
+  name VARCHAR(160) NOT NULL,
+  ot_kind ENUM('REGULAR', 'WEEKEND', 'HOLIDAY', 'NIGHT_SHIFT') NOT NULL DEFAULT 'REGULAR',
+-- Either a flat hourly rate or a multiplier applied to derived hourly pay.
+  rate_type ENUM('FLAT_HOURLY', 'MULTIPLIER') NOT NULL DEFAULT 'FLAT_HOURLY',
+  flat_rate DECIMAL(12, 2) NULL,
+  multiplier DECIMAL(6, 3) NULL,
+  min_minutes INT UNSIGNED NOT NULL DEFAULT 30,
+  max_hours_per_day DECIMAL(5, 2) NULL,
+  max_hours_per_month DECIMAL(6, 2) NULL,
+  requires_approval BOOLEAN NOT NULL DEFAULT true,
+  grade VARCHAR(20) NULL,
+  branch VARCHAR(120) NULL,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_by INT UNSIGNED NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_ot_rules_active (is_active),
+  INDEX idx_ot_rules_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

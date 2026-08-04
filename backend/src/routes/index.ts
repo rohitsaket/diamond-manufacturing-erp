@@ -5,6 +5,10 @@ import floorRoutes from './floor.routes';
 import ledgerRoutes from './ledger.routes';
 import employeeRoutes from './employee.routes';
 import payrollRoutes from './payroll.routes';
+import compensationRoutes from './compensation.routes';
+import payrollLoanRoutes from './payroll-loans.routes';
+import payrollRunRoutes from './payroll-runs.routes';
+import payrollAdminRoutes from './payroll-admin.routes';
 import rateCardRoutes from './rate-card.routes';
 import attendanceRoutes from './attendance.routes';
 import leaveRoutes from './leave.routes';
@@ -30,6 +34,12 @@ router.use('/profile', profileRoutes);
 router.use('/documents', documentRoutes);
 router.use('/organization', organizationRoutes);
 router.use('/payroll', payrollRoutes);
+
+// Enterprise payroll
+router.use('/compensation', compensationRoutes);
+router.use('/payroll-loans', payrollLoanRoutes);
+router.use('/payroll-runs', payrollRunRoutes);
+router.use('/payroll-admin', payrollAdminRoutes);
 router.use('/rate-card', rateCardRoutes);
 
 // HRMS

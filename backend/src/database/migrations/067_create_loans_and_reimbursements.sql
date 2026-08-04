@@ -1,0 +1,102 @@
+-- Loans with a real EMI schedule. The existing `advances` table keeps working
+-- for simple salary advances; loans add scheduled amortisation on top.
+CREATE TABLE IF NOT EXISTS employee_loans (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT UNSIGNED NOT NULL,
+  loan_type ENUM('PERSONAL', 'MEDICAL', 'EDUCATION', 'HOUSING', 'VEHICLE', 'EMERGENCY', 'OTHER') NOT NULL DEFAULT 'PERSONAL',
+  principal DECIMAL(14, 2) NOT NULL,
+  interest_rate_pct DECIMAL(6, 3) NOT NULL DEFAULT 0,
+  tenure_months INT UNSIGNED NOT NULL,
+  emi_amount DECIMAL(14, 2) NOT NULL,
+  currency CHAR(3) NOT NULL DEFAULT 'INR',
+  disbursed_on DATE NULL,
+  first_emi_date DATE NULL,
+  purpose VARCHAR(500) NULL,
+  status ENUM('DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED', 'ACTIVE', 'CLOSED', 'FORECLOSED', 'WRITTEN_OFF')
+    NOT NULL DEFAULT 'DRAFT',
+  approved_by INT UNSIGNED NULL,
+  approved_at DATETIME NULL,
+  closed_at DATETIME NULL,
+  created_by INT UNSIGNED NULL,
+  updated_by INT UNSIGNED NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL,
+  FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+  FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_loans_employee (employee_id, status),
+  INDEX idx_loans_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS loan_installments (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  loan_id INT UNSIGNED NOT NULL,
+  seq INT UNSIGNED NOT NULL,
+  due_date DATE NOT NULL,
+  principal_component DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  interest_component DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  emi_amount DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  outstanding_after DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  status ENUM('PENDING', 'RECOVERED', 'SKIPPED', 'WAIVED') NOT NULL DEFAULT 'PENDING',
+  recovered_amount DECIMAL(14, 2) NOT NULL DEFAULT 0,
+  recovered_on DATE NULL,
+  salary_line_id INT UNSIGNED NULL,
+  period_id INT UNSIGNED NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (loan_id) REFERENCES employee_loans(id) ON DELETE CASCADE,
+  FOREIGN KEY (salary_line_id) REFERENCES salary_lines(id) ON DELETE SET NULL,
+  FOREIGN KEY (period_id) REFERENCES salary_periods(id) ON DELETE SET NULL,
+  UNIQUE KEY uk_loan_seq (loan_id, seq),
+  INDEX idx_installments_status (loan_id, status),
+  INDEX idx_installments_period (period_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Reimbursement claims, paid through payroll rather than petty cash.
+CREATE TABLE IF NOT EXISTS reimbursement_types (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(40) NOT NULL UNIQUE,
+  name VARCHAR(160) NOT NULL,
+  component_id INT UNSIGNED NULL,
+  annual_limit DECIMAL(12, 2) NULL,
+  monthly_limit DECIMAL(12, 2) NULL,
+  requires_receipt BOOLEAN NOT NULL DEFAULT true,
+  is_taxable BOOLEAN NOT NULL DEFAULT false,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (component_id) REFERENCES pay_components(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS reimbursement_claims (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT UNSIGNED NOT NULL,
+  type_id INT UNSIGNED NOT NULL,
+  claim_no VARCHAR(30) NOT NULL UNIQUE,
+  amount DECIMAL(14, 2) NOT NULL,
+  approved_amount DECIMAL(14, 2) NULL,
+  currency CHAR(3) NOT NULL DEFAULT 'INR',
+  expense_date DATE NOT NULL,
+  description VARCHAR(500) NULL,
+  document_id INT UNSIGNED NULL,
+  status ENUM('DRAFT', 'SUBMITTED', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED', 'PAID') NOT NULL DEFAULT 'SUBMITTED',
+  payout_period_id INT UNSIGNED NULL,
+  decided_by INT UNSIGNED NULL,
+  decided_at DATETIME NULL,
+  decision_note VARCHAR(500) NULL,
+  created_by INT UNSIGNED NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL,
+  FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+  FOREIGN KEY (type_id) REFERENCES reimbursement_types(id),
+  FOREIGN KEY (document_id) REFERENCES employee_documents(id) ON DELETE SET NULL,
+  FOREIGN KEY (payout_period_id) REFERENCES salary_periods(id) ON DELETE SET NULL,
+  FOREIGN KEY (decided_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_claims_employee (employee_id, status),
+  INDEX idx_claims_payout (payout_period_id),
+  INDEX idx_claims_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

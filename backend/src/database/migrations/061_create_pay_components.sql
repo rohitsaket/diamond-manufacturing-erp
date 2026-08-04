@@ -1,0 +1,82 @@
+-- Pay components: the atoms every salary structure and payslip is built from.
+CREATE TABLE IF NOT EXISTS pay_components (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(40) NOT NULL UNIQUE,
+  name VARCHAR(160) NOT NULL,
+  component_type ENUM('EARNING', 'DEDUCTION', 'EMPLOYER_CONTRIBUTION', 'REIMBURSEMENT') NOT NULL,
+  category ENUM(
+    'BASIC', 'ALLOWANCE', 'BONUS', 'INCENTIVE', 'VARIABLE_PAY', 'OVERTIME', 'ARREARS',
+    'STATUTORY', 'LOAN', 'ATTENDANCE', 'REIMBURSEMENT', 'OTHER'
+  ) NOT NULL DEFAULT 'OTHER',
+  calculation_type ENUM('FIXED', 'PERCENT_OF', 'FORMULA', 'ATTENDANCE_BASED', 'SLAB', 'PIECE_RATE', 'MANUAL') NOT NULL DEFAULT 'FIXED',
+  percent_of ENUM('BASIC', 'GROSS', 'CTC', 'NET') NULL,
+  default_value DECIMAL(14, 2) NULL,
+  default_percent DECIMAL(7, 4) NULL,
+  formula VARCHAR(500) NULL,
+  is_taxable BOOLEAN NOT NULL DEFAULT true,
+  is_pf_applicable BOOLEAN NOT NULL DEFAULT false,
+  is_esi_applicable BOOLEAN NOT NULL DEFAULT false,
+  is_prorated BOOLEAN NOT NULL DEFAULT true,
+  affects_gross BOOLEAN NOT NULL DEFAULT true,
+  is_statutory BOOLEAN NOT NULL DEFAULT false,
+  is_system BOOLEAN NOT NULL DEFAULT false,
+  display_order INT UNSIGNED NOT NULL DEFAULT 100,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_by INT UNSIGNED NULL,
+  updated_by INT UNSIGNED NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_pay_components_type (component_type, category),
+  INDEX idx_pay_components_active (is_active),
+  INDEX idx_pay_components_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Salary structures (templates), scoped by grade / designation / department / branch.
+CREATE TABLE IF NOT EXISTS salary_structures (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(40) NOT NULL UNIQUE,
+  name VARCHAR(160) NOT NULL,
+  description VARCHAR(500) NULL,
+  currency CHAR(3) NOT NULL DEFAULT 'INR',
+  country CHAR(2) NOT NULL DEFAULT 'IN',
+  grade VARCHAR(20) NULL,
+  designation VARCHAR(120) NULL,
+  department VARCHAR(120) NULL,
+  branch VARCHAR(120) NULL,
+  worker_type ENUM('PIECE_RATE', 'DHAR', 'MAXI') NULL,
+  effective_from DATE NOT NULL,
+  effective_to DATE NULL,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_by INT UNSIGNED NULL,
+  updated_by INT UNSIGNED NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_structures_scope (grade, department, branch),
+  INDEX idx_structures_effective (effective_from, effective_to),
+  INDEX idx_structures_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS salary_structure_lines (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  structure_id INT UNSIGNED NOT NULL,
+  component_id INT UNSIGNED NOT NULL,
+  calculation_type ENUM('FIXED', 'PERCENT_OF', 'FORMULA', 'ATTENDANCE_BASED', 'SLAB', 'PIECE_RATE', 'MANUAL') NULL,
+  percent_of ENUM('BASIC', 'GROSS', 'CTC', 'NET') NULL,
+  amount DECIMAL(14, 2) NULL,
+  percent_value DECIMAL(7, 4) NULL,
+  min_amount DECIMAL(14, 2) NULL,
+  max_amount DECIMAL(14, 2) NULL,
+  display_order INT UNSIGNED NOT NULL DEFAULT 100,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (structure_id) REFERENCES salary_structures(id) ON DELETE CASCADE,
+  FOREIGN KEY (component_id) REFERENCES pay_components(id) ON DELETE CASCADE,
+  UNIQUE KEY uk_structure_component (structure_id, component_id),
+  INDEX idx_structure_lines_structure (structure_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

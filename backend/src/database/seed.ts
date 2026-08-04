@@ -88,6 +88,20 @@ async function run(): Promise<void> {
       'expense_claims', 'tickets', 'tasks',
       'company_events', 'announcements',
       'activity_logs', 'notifications', 'dashboard_layouts',
+      // Enterprise payroll
+      'payment_batch_items', 'payment_batches', 'company_bank_accounts',
+      'exchange_rates', 'currencies',
+      'approval_actions', 'approval_requests', 'approval_workflow_steps', 'approval_workflows',
+      'payroll_audit_logs', 'background_jobs',
+      'employee_benefits', 'benefit_plans', 'final_settlements',
+      'reimbursement_claims', 'reimbursement_types',
+      'loan_installments', 'employee_loans',
+      'overtime_rules', 'pay_awards',
+      'tax_computations', 'tax_declaration_items', 'tax_declarations',
+      'tax_declaration_sections', 'tax_slabs', 'tax_regimes',
+      'salary_line_components', 'payroll_run_errors', 'payroll_runs', 'pay_cycles',
+      'employee_salary_components', 'employee_salary',
+      'salary_structure_lines', 'salary_structures', 'pay_components',
       '_seeds',
     ];
 
