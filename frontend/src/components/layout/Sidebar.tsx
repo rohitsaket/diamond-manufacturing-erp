@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   LayoutDashboard, Layers, BookOpen, Users, DollarSign, Shield, Database,
   ChevronRight, ChevronDown, Bell, RefreshCw, LogOut,
-  CalendarCheck, Briefcase, UserPlus, PieChart, IdCard, FolderLock, Network, Banknote,
+  CalendarCheck, Briefcase, UserPlus, PieChart, IdCard, FolderLock, Network, Banknote, Scale,
 } from 'lucide-react';
 import { Lot, LOT_SLA_DAYS, LEAKAGE_FLAG_THRESHOLD_PCT } from '../../data/mockData';
 import { useApp } from '../../contexts/AppContext';
@@ -69,6 +69,8 @@ interface SidebarProps {
   setDashboardSection?: (section: string) => void;
   payrollSection?: string;
   setPayrollSection?: (section: string) => void;
+  complianceSection?: string;
+  setComplianceSection?: (section: string) => void;
 }
 
 interface NavItem {
@@ -112,6 +114,22 @@ const PAYROLL_SECTION_ITEMS = [
   { id: 'audit', label: 'Audit Log' },
 ];
 
+/** Sections of the tax and statutory compliance workspace. */
+const COMPLIANCE_SECTION_ITEMS = [
+  { id: 'overview', label: 'Compliance Dashboard' },
+  { id: 'contributions', label: 'Contributions' },
+  { id: 'challans', label: 'Challans' },
+  { id: 'filings', label: 'Returns & Filings' },
+  { id: 'form16', label: 'Form 16' },
+  { id: 'calendar', label: 'Compliance Calendar' },
+  { id: 'checks', label: 'Compliance Checks' },
+  { id: 'audit', label: 'Audit & Findings' },
+  { id: 'proofs', label: 'Investment Proofs' },
+  { id: 'calculator', label: 'Tax Calculator' },
+  { id: 'setup', label: 'Statutory Setup' },
+  { id: 'reports', label: 'Reports' },
+];
+
 export function Sidebar({
   activePage,
   setActivePage,
@@ -120,6 +138,8 @@ export function Sidebar({
   dashboardSection,
   payrollSection,
   setPayrollSection,
+  complianceSection,
+  setComplianceSection,
   setDashboardSection,
 }: SidebarProps) {
   const { lots, refresh } = useApp();
@@ -176,6 +196,7 @@ export function Sidebar({
         { id: 'hr', label: 'Leave & Advances', icon: Briefcase, badge: pendingLeave > 0 ? String(pendingLeave) : null },
         { id: 'recruitment', label: 'Recruitment', icon: UserPlus, badge: null },
         { id: 'payrollenterprise', label: 'Payroll', icon: Banknote, badge: null, children: PAYROLL_SECTION_ITEMS },
+        { id: 'compliance', label: 'Tax & Compliance', icon: Scale, badge: null, children: COMPLIANCE_SECTION_ITEMS },
       ],
     },
   ];
@@ -258,7 +279,12 @@ export function Sidebar({
                         {item.children!.map((child) => {
                           // Each expandable parent tracks its own active section.
                           const isPayroll = item.id === 'payrollenterprise';
-                          const currentSection = isPayroll ? payrollSection : dashboardSection;
+                          const isCompliance = item.id === 'compliance';
+                          const currentSection = isPayroll
+                            ? payrollSection
+                            : isCompliance
+                              ? complianceSection
+                              : dashboardSection;
                           const isChildActive = isActive && currentSection === child.id;
                           return (
                             <li key={child.id}>
@@ -266,6 +292,7 @@ export function Sidebar({
                                 onClick={() => {
                                   setActivePage(item.id);
                                   if (isPayroll) setPayrollSection?.(child.id);
+                                  else if (isCompliance) setComplianceSection?.(child.id);
                                   else setDashboardSection?.(child.id);
                                 }}
                                 className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs transition-colors ${
