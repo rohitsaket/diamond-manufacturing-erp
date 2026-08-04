@@ -56,7 +56,8 @@ export const statutoryApi = {
     api.get<any[]>(`/statutory/challans${qs(filters)}`),
   challan: (id: number) => api.get<any>(`/statutory/challans/${id}`),
   overdueChallans: () => api.get<any[]>('/statutory/challans/overdue'),
-  generateChallan: (body: { scheme: string; monthKey: string; dueDate?: string }) =>
+  // stateCode is required by the backend for PT and LWF challans.
+  generateChallan: (body: { scheme: string; monthKey: string; dueDate?: string; stateCode?: string }) =>
     api.post<any>('/statutory/challans/generate', body),
   markChallanPaid: (id: number, body: Record<string, unknown>) =>
     api.put<any>(`/statutory/challans/${id}/paid`, body),
