@@ -61,6 +61,15 @@ export interface EmployeeRow {
   pf_applicable: boolean;
   esi_applicable: boolean;
   shift_id: number | null;
+  // Organisation links added by migration 050. Optional so every existing
+  // consumer of EmployeeRow compiles unchanged.
+  company_id?: number | null;
+  branch_id?: number | null;
+  department_id?: number | null;
+  division_id?: number | null;
+  position_id?: number | null;
+  job_grade_id?: number | null;
+  cost_center_id?: number | null;
   created_by: number | null;
   updated_by: number | null;
   created_at: string;

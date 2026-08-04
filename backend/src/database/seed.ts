@@ -55,6 +55,17 @@ async function run(): Promise<void> {
       'advance_recoveries', 'advances',
       'leave_requests', 'leave_balances', 'leave_types',
       'attendance_records', 'holidays', 'shifts',
+      // Enterprise attendance
+      'attendance_audit_logs', 'attendance_compliance_violations', 'attendance_compliance_rules',
+      'visitor_visits', 'visitors',
+      'overtime_records', 'attendance_breaks', 'break_types',
+      'approval_delegations', 'attendance_request_approvals', 'attendance_requests',
+      'attendance_approval_workflows',
+      'attendance_punches', 'device_sync_logs', 'device_enrollments', 'attendance_devices',
+      'attendance_ip_rules', 'face_enrollments', 'nfc_cards', 'qr_tokens',
+      'employee_geofences', 'geofences',
+      'roster_entries', 'rosters', 'employee_shift_assignments', 'shift_rotation_patterns',
+      'attendance_policy_assignments', 'attendance_policies',
       // Organization structure
       'org_audit_logs', 'org_change_requests', 'org_policies',
       'reporting_relationships', 'team_members', 'teams',
