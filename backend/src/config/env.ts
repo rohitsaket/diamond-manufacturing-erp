@@ -11,7 +11,7 @@ export const env = {
     port: parseInt(process.env.DB_PORT || '3306', 10),
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || 'root',
-    name: process.env.DB_NAME || 'harene_diamond_erp',
+    name: process.env.DB_NAME || 'diamondmatrix_erp',
   },
   jwt: {
     secret: process.env.JWT_SECRET || 'dev-secret',
@@ -31,10 +31,30 @@ export const env = {
     secure: process.env.SMTP_SECURE === 'true',
     user: process.env.SMTP_USER || '',
     password: process.env.SMTP_PASSWORD || '',
-    from: process.env.SMTP_FROM || 'Harene Diamond ERP <no-reply@harene.local>',
+    from: process.env.SMTP_FROM || 'DiamondMatrix ERP <no-reply@diamondmatrix.local>',
   },
   company: {
-    name: process.env.COMPANY_NAME || 'Harene Diamond',
+    name: process.env.COMPANY_NAME || 'DiamondMatrix',
     appUrl: process.env.APP_URL || 'http://localhost:5173',
+  },
+  attendance: {
+    /**
+     * Signing key for kiosk QR tokens. Falls back to the JWT secret so the
+     * feature works out of the box, but a dedicated key means rotating QR
+     * codes never forces every session to log out.
+     */
+    qrSecret: process.env.ATTENDANCE_QR_SECRET || process.env.JWT_SECRET || 'dev-secret',
+    qrRotationSeconds: parseInt(process.env.ATTENDANCE_QR_ROTATION_SECONDS || '60', 10),
+    /**
+     * Face matching provider. Nothing is bundled: with no provider configured,
+     * verification reports unavailable instead of returning a pass, because a
+     * biometric check that always succeeds is worse than none at all.
+     */
+    faceProvider: process.env.ATTENDANCE_FACE_PROVIDER || '',
+    faceApiUrl: process.env.ATTENDANCE_FACE_API_URL || '',
+    faceApiKey: process.env.ATTENDANCE_FACE_API_KEY || '',
+    faceMatchThreshold: parseFloat(process.env.ATTENDANCE_FACE_THRESHOLD || '85'),
+    /** Default zone for branches that have not set one. */
+    defaultTimezone: process.env.ATTENDANCE_DEFAULT_TIMEZONE || 'Asia/Kolkata',
   },
 };

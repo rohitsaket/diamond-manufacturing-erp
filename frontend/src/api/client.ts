@@ -1,9 +1,9 @@
-// Thin fetch wrapper around the Harene backend API.
+// Thin fetch wrapper around the DiamondMatrix backend API.
 // Handles base URL, JWT bearer token, JSON encoding, and error normalization.
 
 const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3001/api';
 
-const TOKEN_KEY = 'harene_token';
+const TOKEN_KEY = 'diamondmatrix_token';
 
 export const tokenStore = {
   get: (): string | null => {
@@ -127,7 +127,11 @@ export const api = {
     request<T>(path, { method: 'POST', body: body === undefined ? undefined : JSON.stringify(body) }),
   put: <T>(path: string, body?: unknown): Promise<T> =>
     request<T>(path, { method: 'PUT', body: body === undefined ? undefined : JSON.stringify(body) }),
-  delete: <T>(path: string): Promise<T> => request<T>(path, { method: 'DELETE' }),
+  // A body on DELETE is optional and ignored by every existing caller. It is
+  // supported because removing an attendance punch requires a reason, and the
+  // reason belongs in the body rather than a query string that lands in logs.
+  delete: <T>(path: string, body?: unknown): Promise<T> =>
+    request<T>(path, { method: 'DELETE', body: body === undefined ? undefined : JSON.stringify(body) }),
   upload,
 };
 

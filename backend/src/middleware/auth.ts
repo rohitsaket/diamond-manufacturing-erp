@@ -42,6 +42,34 @@ export function authenticate(req: Request, res: Response, next: NextFunction): v
   }
 }
 
+/**
+ * Same check as `authenticate`, but also accepts the token as a `token` query
+ * parameter.
+ *
+ * This exists solely for the server-sent events stream: the browser's
+ * EventSource cannot set an Authorization header, so there is no other way to
+ * authenticate it. It is deliberately a separate middleware rather than a
+ * relaxation of `authenticate` -- a token in a query string can end up in
+ * access logs and referrers, so only the one endpoint that has no alternative
+ * opts into it.
+ */
+export function authenticateStream(req: Request, res: Response, next: NextFunction): void {
+  const header = req.headers.authorization;
+  const queryToken = typeof req.query.token === 'string' ? req.query.token : null;
+  const token = header?.startsWith('Bearer ') ? header.slice(7) : queryToken;
+
+  if (!token) {
+    res.status(401).json({ error: 'Authentication required' });
+    return;
+  }
+  try {
+    req.user = jwt.verify(token, env.jwt.secret) as AuthPayload;
+    next();
+  } catch {
+    res.status(401).json({ error: 'Invalid or expired token' });
+  }
+}
+
 export function requireRole(...roles: string[]) {
   return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user || !roles.includes(req.user.role)) {

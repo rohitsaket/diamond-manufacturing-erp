@@ -2,7 +2,7 @@ import app from './app';
 import { env } from './config/env';
 
 app.listen(env.port, () => {
-  console.log(`\n  🚀 Harene Diamond ERP Backend`);
+  console.log(`\n  🚀 DiamondMatrix ERP Backend`);
   console.log(`  ──────────────────────────`);
   console.log(`  Environment: ${env.nodeEnv}`);
   console.log(`  Port:        ${env.port}`);

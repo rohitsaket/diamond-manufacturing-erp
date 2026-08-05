@@ -64,8 +64,8 @@ export function LoginPage() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-white font-semibold text-lg tracking-tight">Harene</h1>
-                <p className="text-white/40 text-xs uppercase tracking-widest font-medium">Diamond ERP</p>
+                <h1 className="text-white font-semibold text-lg tracking-tight">DiamondMatrix</h1>
+                <p className="text-white/40 text-xs uppercase tracking-widest font-medium">Enterprise ERP</p>
               </div>
             </div>
           </motion.div>
@@ -82,7 +82,7 @@ export function LoginPage() {
                 "Precision in every cut.<br />Clarity in every decision."
               </p>
               <footer className="text-white/30 text-sm mt-3 font-medium">
-                Harene Diamond Manufacturing
+                DiamondMatrix Enterprise Solutions
               </footer>
             </blockquote>
           </motion.div>
@@ -125,8 +125,8 @@ export function LoginPage() {
               </svg>
             </div>
             <div>
-              <h1 className="text-[#111827] font-semibold text-base tracking-tight">Harene</h1>
-              <p className="text-[#6B7280] text-[10px] uppercase tracking-widest font-medium">Diamond ERP</p>
+              <h1 className="text-[#111827] font-semibold text-base tracking-tight">DiamondMatrix</h1>
+              <p className="text-[#6B7280] text-[10px] uppercase tracking-widest font-medium">Enterprise ERP</p>
             </div>
           </div>
 
@@ -266,9 +266,9 @@ export function LoginPage() {
 
           {/* Footer */}
           <p className="text-center text-[#9CA3AF] text-xs mt-8">
-            &copy; {new Date().getFullYear()} Harene Diamond Manufacturing. All rights reserved.
+            &copy; {new Date().getFullYear()} DiamondMatrix Enterprise Solutions. All rights reserved.
           </p>
-          <p className="text-center text-[#D1D5DB] text-[10px] mt-1">Production ERP v2.0</p>
+          <p className="text-center text-[#D1D5DB] text-[10px] mt-1">DiamondMatrix ERP v2.0</p>
         </motion.div>
       </div>
     </div>
