@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   LayoutDashboard, Layers, BookOpen, Users, DollarSign, Shield, Database,
   ChevronRight, ChevronDown, Bell, RefreshCw, LogOut,
-  CalendarCheck, Briefcase, UserPlus, PieChart, IdCard, FolderLock, Network, Banknote, Scale,
+  CalendarCheck, Briefcase, UserPlus, PieChart, IdCard, FolderLock, Network, Banknote, Scale, Target,
 } from 'lucide-react';
 import { Lot, LOT_SLA_DAYS, LEAKAGE_FLAG_THRESHOLD_PCT } from '../../data/mockData';
 import { useApp } from '../../contexts/AppContext';
@@ -71,6 +71,8 @@ interface SidebarProps {
   setPayrollSection?: (section: string) => void;
   complianceSection?: string;
   setComplianceSection?: (section: string) => void;
+  performanceSection?: string;
+  setPerformanceSection?: (section: string) => void;
 }
 
 interface NavItem {
@@ -130,6 +132,24 @@ const COMPLIANCE_SECTION_ITEMS = [
   { id: 'reports', label: 'Reports' },
 ];
 
+/** Sections of the performance management workspace. */
+const PERFORMANCE_SECTION_ITEMS = [
+  { id: 'overview', label: 'Performance Dashboard' },
+  { id: 'cycles', label: 'Performance Cycles' },
+  { id: 'goals', label: 'Goals & OKRs' },
+  { id: 'kpis', label: 'KPIs' },
+  { id: 'kras', label: 'KRAs' },
+  { id: 'reviews', label: 'Reviews & 360°' },
+  { id: 'appraisals', label: 'Appraisals' },
+  { id: 'promotions', label: 'Promotions' },
+  { id: 'competencies', label: 'Competencies' },
+  { id: 'development', label: 'Development Plans' },
+  { id: 'talent', label: 'Talent & Succession' },
+  { id: 'feedback', label: 'Feedback & Recognition' },
+  { id: 'pip', label: 'Improvement Plans' },
+  { id: 'reports', label: 'Reports' },
+];
+
 export function Sidebar({
   activePage,
   setActivePage,
@@ -140,6 +160,8 @@ export function Sidebar({
   setPayrollSection,
   complianceSection,
   setComplianceSection,
+  performanceSection,
+  setPerformanceSection,
   setDashboardSection,
 }: SidebarProps) {
   const { lots, refresh } = useApp();
@@ -197,6 +219,7 @@ export function Sidebar({
         { id: 'recruitment', label: 'Recruitment', icon: UserPlus, badge: null },
         { id: 'payrollenterprise', label: 'Payroll', icon: Banknote, badge: null, children: PAYROLL_SECTION_ITEMS },
         { id: 'compliance', label: 'Tax & Compliance', icon: Scale, badge: null, children: COMPLIANCE_SECTION_ITEMS },
+        { id: 'performance', label: 'Performance', icon: Target, badge: null, children: PERFORMANCE_SECTION_ITEMS },
       ],
     },
   ];
@@ -280,11 +303,14 @@ export function Sidebar({
                           // Each expandable parent tracks its own active section.
                           const isPayroll = item.id === 'payrollenterprise';
                           const isCompliance = item.id === 'compliance';
+                          const isPerformance = item.id === 'performance';
                           const currentSection = isPayroll
                             ? payrollSection
                             : isCompliance
                               ? complianceSection
-                              : dashboardSection;
+                              : isPerformance
+                                ? performanceSection
+                                : dashboardSection;
                           const isChildActive = isActive && currentSection === child.id;
                           return (
                             <li key={child.id}>
@@ -293,6 +319,7 @@ export function Sidebar({
                                   setActivePage(item.id);
                                   if (isPayroll) setPayrollSection?.(child.id);
                                   else if (isCompliance) setComplianceSection?.(child.id);
+                                  else if (isPerformance) setPerformanceSection?.(child.id);
                                   else setDashboardSection?.(child.id);
                                 }}
                                 className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs transition-colors ${

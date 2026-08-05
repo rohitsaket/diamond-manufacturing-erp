@@ -20,6 +20,7 @@ import { Organization } from '../pages/Organization/Organization';
 import { HRDashboard } from '../pages/HRDashboard/HRDashboard';
 import { PayrollEnterprise } from '../pages/PayrollEnterprise/PayrollEnterprise';
 import { Compliance } from '../pages/Compliance/Compliance';
+import { Performance } from '../pages/Performance/Performance';
 import { LoginPage } from '../pages/Login/Login';
 import { LOT_SLA_DAYS } from '../data/mockData';
 
@@ -77,6 +78,8 @@ function AppInner() {
   const [payrollSection, setPayrollSection] = useState('overview');
   // Active section of the tax and statutory compliance workspace.
   const [complianceSection, setComplianceSection] = useState('overview');
+  // Active section of the performance management workspace.
+  const [performanceSection, setPerformanceSection] = useState('overview');
   const { lots, salaryLines, salaryPeriods, loaded, error, refresh } = useApp();
 
   if (!isAuthenticated) {
@@ -120,6 +123,13 @@ function AppInner() {
         onSectionChange={setComplianceSection}
       />
     ),
+    performance: (
+      <Performance
+        onNavigate={setActivePage}
+        section={performanceSection}
+        onSectionChange={setPerformanceSection}
+      />
+    ),
     payrollenterprise: (
       <PayrollEnterprise
         onNavigate={setActivePage}
@@ -154,6 +164,8 @@ function AppInner() {
         setPayrollSection={setPayrollSection}
         complianceSection={complianceSection}
         setComplianceSection={setComplianceSection}
+        performanceSection={performanceSection}
+        setPerformanceSection={setPerformanceSection}
         setDashboardSection={setDashboardSection}
       />
 
