@@ -112,6 +112,18 @@ async function run(): Promise<void> {
       'salary_line_components', 'payroll_run_errors', 'payroll_runs', 'pay_cycles',
       'employee_salary_components', 'employee_salary',
       'salary_structure_lines', 'salary_structures', 'pay_components',
+      // Performance management
+      'perf_audit_logs', 'reward_redemptions', 'reward_ledger', 'recognitions',
+      'continuous_feedback', 'calibration_adjustments', 'calibration_sessions',
+      'succession_candidates', 'succession_plans',
+      'talent_pool_members', 'talent_pools', 'talent_assessments',
+      'promotions', 'appraisals',
+      'pip_reviews', 'pip_objectives', 'pips',
+      'development_plan_items', 'development_plans',
+      'competency_ratings', 'competencies',
+      'review_attachments', 'review_responses', 'perf_reviews', 'review_templates',
+      'employee_kras', 'kra_library', 'kpi_values', 'kpi_assignments', 'kpi_library',
+      'goal_updates', 'goal_milestones', 'goal_templates', 'perf_goals', 'perf_cycles',
       '_seeds',
     ];
 
