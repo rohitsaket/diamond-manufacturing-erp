@@ -21,6 +21,7 @@ import { HRDashboard } from '../pages/HRDashboard/HRDashboard';
 import { PayrollEnterprise } from '../pages/PayrollEnterprise/PayrollEnterprise';
 import { Compliance } from '../pages/Compliance/Compliance';
 import { Performance } from '../pages/Performance/Performance';
+import { InternalJobs } from '../pages/InternalJobs/InternalJobs';
 import { LoginPage } from '../pages/Login/Login';
 import { LOT_SLA_DAYS } from '../data/mockData';
 
@@ -80,6 +81,8 @@ function AppInner() {
   const [complianceSection, setComplianceSection] = useState('overview');
   // Active section of the performance management workspace.
   const [performanceSection, setPerformanceSection] = useState('overview');
+  // Active section of the internal jobs / talent marketplace workspace.
+  const [internalJobsSection, setInternalJobsSection] = useState('overview');
   const { lots, salaryLines, salaryPeriods, loaded, error, refresh } = useApp();
 
   if (!isAuthenticated) {
@@ -121,6 +124,13 @@ function AppInner() {
         onNavigate={setActivePage}
         section={complianceSection}
         onSectionChange={setComplianceSection}
+      />
+    ),
+    internaljobs: (
+      <InternalJobs
+        onNavigate={setActivePage}
+        section={internalJobsSection}
+        onSectionChange={setInternalJobsSection}
       />
     ),
     performance: (
@@ -166,6 +176,8 @@ function AppInner() {
         setComplianceSection={setComplianceSection}
         performanceSection={performanceSection}
         setPerformanceSection={setPerformanceSection}
+        internalJobsSection={internalJobsSection}
+        setInternalJobsSection={setInternalJobsSection}
         setDashboardSection={setDashboardSection}
       />
 

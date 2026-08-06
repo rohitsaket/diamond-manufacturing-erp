@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   LayoutDashboard, Layers, BookOpen, Users, DollarSign, Shield, Database,
   ChevronRight, ChevronDown, Bell, RefreshCw, LogOut,
-  CalendarCheck, Briefcase, UserPlus, PieChart, IdCard, FolderLock, Network, Banknote, Scale, Target,
+  CalendarCheck, Briefcase, UserPlus, PieChart, IdCard, FolderLock, Network, Banknote, Scale, Target, Compass,
 } from 'lucide-react';
 import { Lot, LOT_SLA_DAYS, LEAKAGE_FLAG_THRESHOLD_PCT } from '../../data/mockData';
 import { useApp } from '../../contexts/AppContext';
@@ -73,6 +73,8 @@ interface SidebarProps {
   setComplianceSection?: (section: string) => void;
   performanceSection?: string;
   setPerformanceSection?: (section: string) => void;
+  internalJobsSection?: string;
+  setInternalJobsSection?: (section: string) => void;
 }
 
 interface NavItem {
@@ -150,6 +152,22 @@ const PERFORMANCE_SECTION_ITEMS = [
   { id: 'reports', label: 'Reports' },
 ];
 
+/** Sections of the internal jobs / talent marketplace workspace. */
+const INTERNAL_JOBS_SECTION_ITEMS = [
+  { id: 'overview', label: 'Hiring Dashboard' },
+  { id: 'portal', label: 'Job Portal' },
+  { id: 'requisitions', label: 'Requisitions' },
+  { id: 'jobs', label: 'Job Postings' },
+  { id: 'applications', label: 'Applications' },
+  { id: 'interviews', label: 'Interviews' },
+  { id: 'assessments', label: 'Assessments' },
+  { id: 'offers', label: 'Offers' },
+  { id: 'referrals', label: 'Referrals' },
+  { id: 'talentpool', label: 'Talent Pool' },
+  { id: 'career', label: 'Career Development' },
+  { id: 'reports', label: 'Reports' },
+];
+
 export function Sidebar({
   activePage,
   setActivePage,
@@ -162,6 +180,8 @@ export function Sidebar({
   setComplianceSection,
   performanceSection,
   setPerformanceSection,
+  internalJobsSection,
+  setInternalJobsSection,
   setDashboardSection,
 }: SidebarProps) {
   const { lots, refresh } = useApp();
@@ -220,6 +240,7 @@ export function Sidebar({
         { id: 'payrollenterprise', label: 'Payroll', icon: Banknote, badge: null, children: PAYROLL_SECTION_ITEMS },
         { id: 'compliance', label: 'Tax & Compliance', icon: Scale, badge: null, children: COMPLIANCE_SECTION_ITEMS },
         { id: 'performance', label: 'Performance', icon: Target, badge: null, children: PERFORMANCE_SECTION_ITEMS },
+        { id: 'internaljobs', label: 'Internal Jobs', icon: Compass, badge: null, children: INTERNAL_JOBS_SECTION_ITEMS },
       ],
     },
   ];
@@ -304,13 +325,16 @@ export function Sidebar({
                           const isPayroll = item.id === 'payrollenterprise';
                           const isCompliance = item.id === 'compliance';
                           const isPerformance = item.id === 'performance';
+                          const isInternalJobs = item.id === 'internaljobs';
                           const currentSection = isPayroll
                             ? payrollSection
                             : isCompliance
                               ? complianceSection
                               : isPerformance
                                 ? performanceSection
-                                : dashboardSection;
+                                : isInternalJobs
+                                  ? internalJobsSection
+                                  : dashboardSection;
                           const isChildActive = isActive && currentSection === child.id;
                           return (
                             <li key={child.id}>
@@ -320,6 +344,7 @@ export function Sidebar({
                                   if (isPayroll) setPayrollSection?.(child.id);
                                   else if (isCompliance) setComplianceSection?.(child.id);
                                   else if (isPerformance) setPerformanceSection?.(child.id);
+                                  else if (isInternalJobs) setInternalJobsSection?.(child.id);
                                   else setDashboardSection?.(child.id);
                                 }}
                                 className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs transition-colors ${
