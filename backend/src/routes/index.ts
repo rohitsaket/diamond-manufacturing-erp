@@ -13,6 +13,8 @@ import statutoryRoutes from './statutory.routes';
 import complianceRoutes from './compliance.routes';
 import performanceRoutes from './performance.routes';
 import talentRoutes from './talent.routes';
+import internalJobsRoutes from './internal-jobs.routes';
+import internalHiringRoutes from './internal-hiring.routes';
 import rateCardRoutes from './rate-card.routes';
 import attendanceRoutes from './attendance.routes';
 import leaveRoutes from './leave.routes';
@@ -50,6 +52,10 @@ router.use('/compliance', complianceRoutes);
 // Performance management
 router.use('/performance', performanceRoutes);
 router.use('/talent', talentRoutes);
+
+// Internal recruitment and talent marketplace
+router.use('/internal-jobs', internalJobsRoutes);
+router.use('/internal-hiring', internalHiringRoutes);
 router.use('/rate-card', rateCardRoutes);
 
 // HRMS

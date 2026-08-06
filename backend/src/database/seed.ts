@@ -112,6 +112,13 @@ async function run(): Promise<void> {
       'salary_line_components', 'payroll_run_errors', 'payroll_runs', 'pay_cycles',
       'employee_salary_components', 'employee_salary',
       'salary_structure_lines', 'salary_structures', 'pay_components',
+      // Internal recruitment
+      'rec_audit_logs', 'career_interests', 'internal_offers',
+      'assessment_results', 'assessments',
+      'interview_feedback', 'interview_rounds',
+      'referrals', 'application_documents', 'application_stage_events',
+      'internal_applications', 'saved_jobs', 'internal_job_templates',
+      'internal_jobs', 'job_requisitions',
       // Performance management
       'perf_audit_logs', 'reward_redemptions', 'reward_ledger', 'recognitions',
       'continuous_feedback', 'calibration_adjustments', 'calibration_sessions',
