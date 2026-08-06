@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   LayoutDashboard, Layers, BookOpen, Users, DollarSign, Shield, Database,
   ChevronRight, ChevronDown, Bell, RefreshCw, LogOut,
-  CalendarCheck, Briefcase, UserPlus, PieChart, IdCard, FolderLock, Network, Banknote, Scale, Target, Compass,
+  CalendarCheck, Briefcase, UserPlus, PieChart, IdCard, FolderLock, Network, Banknote, Scale, Target, Compass, DoorOpen,
 } from 'lucide-react';
 import { Lot, LOT_SLA_DAYS, LEAKAGE_FLAG_THRESHOLD_PCT } from '../../data/mockData';
 import { useApp } from '../../contexts/AppContext';
@@ -75,6 +75,8 @@ interface SidebarProps {
   setPerformanceSection?: (section: string) => void;
   internalJobsSection?: string;
   setInternalJobsSection?: (section: string) => void;
+  offboardingSection?: string;
+  setOffboardingSection?: (section: string) => void;
 }
 
 interface NavItem {
@@ -168,6 +170,22 @@ const INTERNAL_JOBS_SECTION_ITEMS = [
   { id: 'reports', label: 'Reports' },
 ];
 
+/** Sections of the offboarding workspace. */
+const OFFBOARDING_SECTION_ITEMS = [
+  { id: 'overview', label: 'Exit Dashboard' },
+  { id: 'cases', label: 'Separation Cases' },
+  { id: 'interviews', label: 'Exit Interviews' },
+  { id: 'clearance', label: 'Clearances' },
+  { id: 'assets', label: 'Asset Returns' },
+  { id: 'kt', label: 'Knowledge Transfer' },
+  { id: 'access', label: 'Access Revocation' },
+  { id: 'settlement', label: 'Final Settlement' },
+  { id: 'letters', label: 'Exit Letters' },
+  { id: 'alumni', label: 'Alumni & Rehire' },
+  { id: 'analytics', label: 'Exit Analytics' },
+  { id: 'reports', label: 'Reports' },
+];
+
 export function Sidebar({
   activePage,
   setActivePage,
@@ -182,6 +200,8 @@ export function Sidebar({
   setPerformanceSection,
   internalJobsSection,
   setInternalJobsSection,
+  offboardingSection,
+  setOffboardingSection,
   setDashboardSection,
 }: SidebarProps) {
   const { lots, refresh } = useApp();
@@ -241,6 +261,7 @@ export function Sidebar({
         { id: 'compliance', label: 'Tax & Compliance', icon: Scale, badge: null, children: COMPLIANCE_SECTION_ITEMS },
         { id: 'performance', label: 'Performance', icon: Target, badge: null, children: PERFORMANCE_SECTION_ITEMS },
         { id: 'internaljobs', label: 'Internal Jobs', icon: Compass, badge: null, children: INTERNAL_JOBS_SECTION_ITEMS },
+        { id: 'offboarding', label: 'Offboarding', icon: DoorOpen, badge: null, children: OFFBOARDING_SECTION_ITEMS },
       ],
     },
   ];
@@ -326,6 +347,7 @@ export function Sidebar({
                           const isCompliance = item.id === 'compliance';
                           const isPerformance = item.id === 'performance';
                           const isInternalJobs = item.id === 'internaljobs';
+                          const isOffboarding = item.id === 'offboarding';
                           const currentSection = isPayroll
                             ? payrollSection
                             : isCompliance
@@ -334,7 +356,9 @@ export function Sidebar({
                                 ? performanceSection
                                 : isInternalJobs
                                   ? internalJobsSection
-                                  : dashboardSection;
+                                  : isOffboarding
+                                    ? offboardingSection
+                                    : dashboardSection;
                           const isChildActive = isActive && currentSection === child.id;
                           return (
                             <li key={child.id}>
@@ -345,6 +369,7 @@ export function Sidebar({
                                   else if (isCompliance) setComplianceSection?.(child.id);
                                   else if (isPerformance) setPerformanceSection?.(child.id);
                                   else if (isInternalJobs) setInternalJobsSection?.(child.id);
+                                  else if (isOffboarding) setOffboardingSection?.(child.id);
                                   else setDashboardSection?.(child.id);
                                 }}
                                 className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs transition-colors ${

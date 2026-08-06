@@ -21,7 +21,8 @@ export type ExpenseCategory = 'TRAVEL' | 'FOOD' | 'TOOLS' | 'MEDICAL' | 'OTHER';
 export type AssetStatus = 'AVAILABLE' | 'ASSIGNED' | 'REPAIR' | 'RETIRED';
 export type NotificationCategory =
   | 'LEAVE' | 'ATTENDANCE' | 'PAYROLL' | 'TRAINING' | 'POLICY'
-  | 'SECURITY' | 'SYSTEM' | 'RECRUITMENT' | 'EXPENSE' | 'TASK' | 'HELPDESK' | 'ASSET';
+  | 'SECURITY' | 'SYSTEM' | 'RECRUITMENT' | 'EXPENSE' | 'TASK' | 'HELPDESK' | 'ASSET'
+  | 'PERFORMANCE' | 'OFFBOARDING';
 export type NotificationPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
 export type EmailStatus = 'NONE' | 'PENDING' | 'SENT' | 'FAILED';
 export type TrainingStatus = 'PLANNED' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';

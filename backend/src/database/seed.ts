@@ -112,6 +112,12 @@ async function run(): Promise<void> {
       'salary_line_components', 'payroll_run_errors', 'payroll_runs', 'pay_cycles',
       'employee_salary_components', 'employee_salary',
       'salary_structure_lines', 'salary_structures', 'pay_components',
+      // Offboarding
+      'exit_audit_logs', 'rehire_reviews', 'alumni', 'exit_letters',
+      'access_revocations', 'kt_items', 'kt_plans', 'asset_returns',
+      'clearance_tasks', 'clearances',
+      'exit_survey_responses', 'exit_survey_questions', 'exit_interviews',
+      'notice_rules', 'separation_events', 'separations',
       // Internal recruitment
       'rec_audit_logs', 'career_interests', 'internal_offers',
       'assessment_results', 'assessments',

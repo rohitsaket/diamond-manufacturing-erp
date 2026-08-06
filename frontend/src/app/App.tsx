@@ -22,6 +22,7 @@ import { PayrollEnterprise } from '../pages/PayrollEnterprise/PayrollEnterprise'
 import { Compliance } from '../pages/Compliance/Compliance';
 import { Performance } from '../pages/Performance/Performance';
 import { InternalJobs } from '../pages/InternalJobs/InternalJobs';
+import { Offboarding } from '../pages/Offboarding/Offboarding';
 import { LoginPage } from '../pages/Login/Login';
 import { LOT_SLA_DAYS } from '../data/mockData';
 
@@ -83,6 +84,8 @@ function AppInner() {
   const [performanceSection, setPerformanceSection] = useState('overview');
   // Active section of the internal jobs / talent marketplace workspace.
   const [internalJobsSection, setInternalJobsSection] = useState('overview');
+  // Active section of the offboarding workspace.
+  const [offboardingSection, setOffboardingSection] = useState('overview');
   const { lots, salaryLines, salaryPeriods, loaded, error, refresh } = useApp();
 
   if (!isAuthenticated) {
@@ -124,6 +127,13 @@ function AppInner() {
         onNavigate={setActivePage}
         section={complianceSection}
         onSectionChange={setComplianceSection}
+      />
+    ),
+    offboarding: (
+      <Offboarding
+        onNavigate={setActivePage}
+        section={offboardingSection}
+        onSectionChange={setOffboardingSection}
       />
     ),
     internaljobs: (
@@ -178,6 +188,8 @@ function AppInner() {
         setPerformanceSection={setPerformanceSection}
         internalJobsSection={internalJobsSection}
         setInternalJobsSection={setInternalJobsSection}
+        offboardingSection={offboardingSection}
+        setOffboardingSection={setOffboardingSection}
         setDashboardSection={setDashboardSection}
       />
 
